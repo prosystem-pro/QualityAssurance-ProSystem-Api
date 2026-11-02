@@ -13,6 +13,7 @@ const PermisoRuta = require("./Rutas/PermisoRuta");
 const RecursoRuta = require("./Rutas/RecursoRuta");
 const UsuarioRuta = require("./Rutas/UsuarioRuta");
 const PermisosTablasDisponiblesRuta = require("./Rutas/PermisosTablasDisponiblesRuta");
+const GenerarModelosTypescriptRuta = require("./Rutas/GenerarModelosTypescriptRuta");
 const LoginRuta = require("./Rutas/LoginRuta");
 
 App.use(Express.text({ type: 'text/plain' }));
@@ -27,6 +28,7 @@ App.use(`/${Ruter}`, PermisoRuta);
 App.use(`/${Ruter}`, RecursoRuta);
 App.use(`/${Ruter}`, UsuarioRuta);
 App.use(`/${Ruter}`, PermisosTablasDisponiblesRuta);
+App.use(`/${Ruter}`, GenerarModelosTypescriptRuta);
 App.use(`/${Ruter}`, LoginRuta);
 
 module.exports = App;
