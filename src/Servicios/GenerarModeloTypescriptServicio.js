@@ -1,56 +1,58 @@
-const fs = require("fs");
-const path = require("path");
+const Fs = require("fs");
+const Ruta = require("path");
+const ConexionBaseDatos = require("../BaseDatos/ConexionBaseDatos");
+const Sequelize = require("sequelize");
 const { LanzarError } = require("../Utilidades/ErrorServicios");
 
-const rutaModelos = path.join(__dirname, "../Modelos");
+const RutaModelos = Ruta.join(__dirname, "../Modelos");
 
 const GenerarModelos = async () => {
-  if (!fs.existsSync(rutaModelos)) {
-    throw LanzarError(`Carpeta de modelos no encontrada: ${rutaModelos}`, 500, "Configuracion");
+  if (!Fs.existsSync(RutaModelos)) {
+    throw LanzarError(`Carpeta de modelos no encontrada: ${RutaModelos}`, 500, "Configuracion");
   }
 
-  const archivos = fs.readdirSync(rutaModelos);
-  const modelosTS = {};
+  const archivos = Fs.readdirSync(RutaModelos);
+  const ModelosTS = {};
 
   for (const archivo of archivos) {
     if (!archivo.endsWith(".js")) continue;
 
-    const rutaCompleta = path.join(rutaModelos, archivo);
-    const definicionModelo = require(rutaCompleta);
-      
+    const RutaModelo = Ruta.join(RutaModelos, archivo);
+    const DefinicionModelo = require(RutaModelo);
     let modelo;
-    if (typeof definicionModelo === "function") {
-      continue;
+
+    if (typeof DefinicionModelo === "function") {
+      modelo = DefinicionModelo(ConexionBaseDatos, Sequelize.DataTypes);
     } else {
-      modelo = definicionModelo;
+      modelo = DefinicionModelo;
     }
 
-    const nombreModelo = archivo.replace(".js", "");
+    const NombreModelo = archivo.replace(".js", "");
 
     if (!modelo || !modelo.rawAttributes) {
-      console.warn(`⚠️ El modelo ${nombreModelo} no tiene atributos. Se omite.`);
+      console.warn(`⚠️ El modelo ${NombreModelo} no tiene atributos o rawAttributes. Se omite.`);
       continue;
     }
 
-    let interfazTS = `export interface ${nombreModelo} {\n`;
+    let InterfazTS = `export interface ${NombreModelo} {\n`;
       
     for (const clave of Object.keys(modelo.rawAttributes)) {
       const tipoNombre = modelo.rawAttributes[clave].type.constructor.name.toLowerCase();
       let tipoTS = "any";
 
-      if (tipoNombre.includes("string")) tipoTS = "string";
+      if (tipoNombre.includes("string") || tipoNombre.includes("text")) tipoTS = "string";
       else if (tipoNombre.includes("integer") || tipoNombre.includes("float") || tipoNombre.includes("decimal")) tipoTS = "number";
       else if (tipoNombre.includes("boolean")) tipoTS = "boolean";
       else if (tipoNombre.includes("date")) tipoTS = "Date";
 
-      interfazTS += `  ${clave}: ${tipoTS};\n`;
+      InterfazTS += `  ${clave}: ${tipoTS};\n`;
     }
       
-    interfazTS += "}\n";
-    modelosTS[nombreModelo] = interfazTS;
+    InterfazTS += "}\n";
+    ModelosTS[NombreModelo] = InterfazTS;
   }
 
-  return modelosTS;
+  return ModelosTS;
 };
 
 module.exports = { GenerarModelos };
