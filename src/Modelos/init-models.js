@@ -1,6 +1,6 @@
 var DataTypes = require("sequelize").DataTypes;
 var _Empresa = require("./Empresa");
-var _Pago = require("./Pago");
+var _Pagos = require("./Pagos");
 var _Permiso = require("./Permiso");
 var _PermisoRolRecurso = require("./PermisoRolRecurso");
 var _Recurso = require("./Recurso");
@@ -9,13 +9,17 @@ var _Usuario = require("./Usuario");
 
 function initModels(sequelize) {
   var Empresa = _Empresa(sequelize, DataTypes);
-  var Pago = _Pago(sequelize, DataTypes);
+  var Pagos = _Pagos(sequelize, DataTypes);
   var Permiso = _Permiso(sequelize, DataTypes);
   var PermisoRolRecurso = _PermisoRolRecurso(sequelize, DataTypes);
   var Recurso = _Recurso(sequelize, DataTypes);
   var Rol = _Rol(sequelize, DataTypes);
   var Usuario = _Usuario(sequelize, DataTypes);
 
+  Pagos.belongsTo(Empresa, { as: "CodigoEmpresa_Empresa", foreignKey: "CodigoEmpresa"});
+  Empresa.hasMany(Pagos, { as: "Pagos", foreignKey: "CodigoEmpresa"});
+  Usuario.belongsTo(Empresa, { as: "CodigoEmpresa_Empresa", foreignKey: "CodigoEmpresa"});
+  Empresa.hasMany(Usuario, { as: "Usuarios", foreignKey: "CodigoEmpresa"});
   PermisoRolRecurso.belongsTo(Permiso, { as: "CodigoPermiso_Permiso", foreignKey: "CodigoPermiso"});
   Permiso.hasMany(PermisoRolRecurso, { as: "PermisoRolRecursos", foreignKey: "CodigoPermiso"});
   PermisoRolRecurso.belongsTo(Recurso, { as: "CodigoRecurso_Recurso", foreignKey: "CodigoRecurso"});
@@ -27,7 +31,7 @@ function initModels(sequelize) {
 
   return {
     Empresa,
-    Pago,
+    Pagos,
     Permiso,
     PermisoRolRecurso,
     Recurso,

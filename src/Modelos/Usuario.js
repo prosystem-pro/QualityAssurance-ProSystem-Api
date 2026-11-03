@@ -7,6 +7,15 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       primaryKey: true
     },
+    CodigoEmpresa: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Empresa',
+        key: 'CodigoEmpresa'
+      },
+      unique: "Uq_AdUsuario_NombreUsuario"
+    },
     CodigoRol: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -15,44 +24,27 @@ module.exports = function(sequelize, DataTypes) {
         key: 'CodigoRol'
       }
     },
-    NombreCompleto: {
-      type: DataTypes.STRING(128),
-      allowNull: true
-    },
     NombreUsuario: {
       type: DataTypes.STRING(64),
       allowNull: false,
       unique: "Uq_AdUsuario_NombreUsuario"
-    },
-    Correo: {
-      type: DataTypes.STRING(128),
-      allowNull: true,
-      unique: "Uq_AdUsuario_Correo"
-    },
-    Telefono: {
-      type: DataTypes.STRING(16),
-      allowNull: true
-    },
-    Direccion: {
-      type: DataTypes.STRING(256),
-      allowNull: true
     },
     ClaveHash: {
       type: DataTypes.STRING(256),
       allowNull: false
     },
     ClaveSalt: {
-      type: DataTypes.STRING(128),
+      type: DataTypes.STRING(256),
       allowNull: false
+    },
+    SuperAdmin: {
+      type: DataTypes.TINYINT,
+      allowNull: true
     },
     Estatus: {
       type: DataTypes.TINYINT,
       allowNull: false,
       defaultValue: 1
-    },
-    SuperAdmin: {
-      type: DataTypes.TINYINT,
-      allowNull: true
     }
   }, {
     sequelize,
@@ -68,16 +60,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "Uq_AdUsuario_Correo",
-        unique: true,
-        fields: [
-          { name: "Correo" },
-        ]
-      },
-      {
         name: "Uq_AdUsuario_NombreUsuario",
         unique: true,
         fields: [
+          { name: "CodigoEmpresa" },
           { name: "NombreUsuario" },
         ]
       },

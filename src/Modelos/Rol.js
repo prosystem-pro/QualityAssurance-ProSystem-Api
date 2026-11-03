@@ -10,7 +10,7 @@ module.exports = function(sequelize, DataTypes) {
     NombreRol: {
       type: DataTypes.STRING(64),
       allowNull: false,
-      unique: "Uq_AdRol_NombreRol"
+      unique: "Uq_Adrol_NombreRol"
     },
     Estatus: {
       type: DataTypes.TINYINT,
@@ -31,7 +31,7 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "Uq_AdRol_NombreRol",
+        name: "Uq_Adrol_NombreRol",
         unique: true,
         fields: [
           { name: "NombreRol" },

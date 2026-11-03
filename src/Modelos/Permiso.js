@@ -5,12 +5,12 @@ module.exports = function(sequelize, DataTypes) {
       autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      unique: "Uq_AdPermiso_NombrePermiso"
+      primaryKey: true
     },
     NombrePermiso: {
       type: DataTypes.STRING(64),
-      allowNull: false
+      allowNull: false,
+      unique: "Uq_AdPermiso_NombrePermiso"
     },
     Estatus: {
       type: DataTypes.TINYINT,
@@ -34,7 +34,7 @@ module.exports = function(sequelize, DataTypes) {
         name: "Uq_AdPermiso_NombrePermiso",
         unique: true,
         fields: [
-          { name: "CodigoPermiso" },
+          { name: "NombrePermiso" },
         ]
       },
     ]

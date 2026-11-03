@@ -1,5 +1,5 @@
 // ARCHIVO GENERADO AUTOMÁTICAMENTE — No editar manualmente
-// Generado el: 2026-10-30T01:37:49.405Z
+// Generado el: 2026-11-03T06:49:09.260Z
 // Nombre configurado en .env: Relaciones.js
 
 const Path = require('path');
@@ -10,6 +10,7 @@ const RutaModelos = Path.join(__dirname);
 
 const Empresa = require(Path.join(RutaModelos, 'Empresa.js'))(BaseDatos, Sequelize.DataTypes);
 const Pago = require(Path.join(RutaModelos, 'Pago.js'))(BaseDatos, Sequelize.DataTypes);
+const Pagos = require(Path.join(RutaModelos, 'Pagos.js'))(BaseDatos, Sequelize.DataTypes);
 const Permiso = require(Path.join(RutaModelos, 'Permiso.js'))(BaseDatos, Sequelize.DataTypes);
 const PermisoRolRecurso = require(Path.join(RutaModelos, 'PermisoRolRecurso.js'))(BaseDatos, Sequelize.DataTypes);
 const Recurso = require(Path.join(RutaModelos, 'Recurso.js'))(BaseDatos, Sequelize.DataTypes);
@@ -54,9 +55,28 @@ Permiso.hasMany(PermisoRolRecurso, {
   as: 'PermisoRolRecurso_CodigoPermiso'
 });
 
+Usuario.belongsTo(Empresa, {
+  foreignKey: 'CodigoEmpresa',
+  as: 'Empresa_CodigoEmpresa'
+});
+Empresa.hasMany(Usuario, {
+  foreignKey: 'CodigoEmpresa',
+  as: 'Usuario_CodigoEmpresa'
+});
+
+Pagos.belongsTo(Empresa, {
+  foreignKey: 'CodigoEmpresa',
+  as: 'Empresa_CodigoEmpresa'
+});
+Empresa.hasMany(Pagos, {
+  foreignKey: 'CodigoEmpresa',
+  as: 'Pagos_CodigoEmpresa'
+});
+
 module.exports = {
   Empresa,
   Pago,
+  Pagos,
   Permiso,
   PermisoRolRecurso,
   Recurso,

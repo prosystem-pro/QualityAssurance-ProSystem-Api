@@ -7,10 +7,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       primaryKey: true
     },
-    NombreComercial: {
+    NombreEmpresa: {
       type: DataTypes.STRING(64),
       allowNull: true,
-      unique: "Uq_AdEmpresa_NombreComercial"
+      unique: "Uq_AdEmpresa_NombreEmpresa"
     },
     RazonSocial: {
       type: DataTypes.STRING(256),
@@ -18,12 +18,11 @@ module.exports = function(sequelize, DataTypes) {
     },
     NIT: {
       type: DataTypes.STRING(32),
-      allowNull: true,
-      unique: "Uq_AdEmpresa_NIT"
+      allowNull: true
     },
     NombrePropietario: {
       type: DataTypes.STRING(64),
-      allowNull: false
+      allowNull: true
     },
     Correo: {
       type: DataTypes.STRING(256),
@@ -31,11 +30,11 @@ module.exports = function(sequelize, DataTypes) {
     },
     Direccion: {
       type: DataTypes.STRING(256),
-      allowNull: true
+      allowNull: false
     },
     Telefono: {
       type: DataTypes.STRING(16),
-      allowNull: true
+      allowNull: false
     },
     Departamento: {
       type: DataTypes.STRING(32),
@@ -49,9 +48,9 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(256),
       allowNull: true
     },
-    ImagenMesaUrl: {
-      type: DataTypes.STRING(256),
-      allowNull: true
+    Eslogan: {
+      type: DataTypes.STRING(128),
+      allowNull: false
     },
     Estatus: {
       type: DataTypes.TINYINT,
@@ -72,17 +71,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "Uq_AdEmpresa_NIT",
+        name: "Uq_AdEmpresa_NombreEmpresa",
         unique: true,
         fields: [
-          { name: "NIT" },
-        ]
-      },
-      {
-        name: "Uq_AdEmpresa_NombreComercial",
-        unique: true,
-        fields: [
-          { name: "NombreComercial" },
+          { name: "NombreEmpresa" },
         ]
       },
     ]
