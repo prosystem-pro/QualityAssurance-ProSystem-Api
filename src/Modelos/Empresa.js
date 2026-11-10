@@ -7,6 +7,14 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       primaryKey: true
     },
+    CodigoTipoEmpresa: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'TipoEmpresa',
+        key: 'CodigoTipoEmpresa'
+      }
+    },
     NombreEmpresa: {
       type: DataTypes.STRING(64),
       allowNull: true,
@@ -56,6 +64,15 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.TINYINT,
       allowNull: false,
       defaultValue: 1
+    },
+    FechaCreacion: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('getdate')
+    },
+    CodigoExterno: {
+      type: DataTypes.STRING(64),
+      allowNull: true
     }
   }, {
     sequelize,

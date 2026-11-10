@@ -1,5 +1,5 @@
 // ARCHIVO GENERADO AUTOMÁTICAMENTE — No editar manualmente
-// Generado el: 2026-11-03T06:49:09.260Z
+// Generado el: 2026-11-10T19:15:44.275Z
 // Nombre configurado en .env: Relaciones.js
 
 const Path = require('path');
@@ -15,9 +15,20 @@ const Permiso = require(Path.join(RutaModelos, 'Permiso.js'))(BaseDatos, Sequeli
 const PermisoRolRecurso = require(Path.join(RutaModelos, 'PermisoRolRecurso.js'))(BaseDatos, Sequelize.DataTypes);
 const Recurso = require(Path.join(RutaModelos, 'Recurso.js'))(BaseDatos, Sequelize.DataTypes);
 const Rol = require(Path.join(RutaModelos, 'Rol.js'))(BaseDatos, Sequelize.DataTypes);
+const TipoEmpresa = require(Path.join(RutaModelos, 'TipoEmpresa.js'))(BaseDatos, Sequelize.DataTypes);
 const Usuario = require(Path.join(RutaModelos, 'Usuario.js'))(BaseDatos, Sequelize.DataTypes);
+const UsuarioEmpresa = require(Path.join(RutaModelos, 'UsuarioEmpresa.js'))(BaseDatos, Sequelize.DataTypes);
 
 // === RELACIONES ===
+
+UsuarioEmpresa.belongsTo(Usuario, {
+  foreignKey: 'CodigoUsuario',
+  as: 'Usuario_CodigoUsuario'
+});
+Usuario.hasMany(UsuarioEmpresa, {
+  foreignKey: 'CodigoUsuario',
+  as: 'UsuarioEmpresa_CodigoUsuario'
+});
 
 Usuario.belongsTo(Rol, {
   foreignKey: 'CodigoRol',
@@ -55,6 +66,15 @@ Permiso.hasMany(PermisoRolRecurso, {
   as: 'PermisoRolRecurso_CodigoPermiso'
 });
 
+UsuarioEmpresa.belongsTo(Empresa, {
+  foreignKey: 'CodigoEmpresa',
+  as: 'Empresa_CodigoEmpresa'
+});
+Empresa.hasMany(UsuarioEmpresa, {
+  foreignKey: 'CodigoEmpresa',
+  as: 'UsuarioEmpresa_CodigoEmpresa'
+});
+
 Usuario.belongsTo(Empresa, {
   foreignKey: 'CodigoEmpresa',
   as: 'Empresa_CodigoEmpresa'
@@ -73,6 +93,15 @@ Empresa.hasMany(Pagos, {
   as: 'Pagos_CodigoEmpresa'
 });
 
+Empresa.belongsTo(TipoEmpresa, {
+  foreignKey: 'CodigoTipoEmpresa',
+  as: 'TipoEmpresa_CodigoTipoEmpresa'
+});
+TipoEmpresa.hasMany(Empresa, {
+  foreignKey: 'CodigoTipoEmpresa',
+  as: 'Empresa_CodigoTipoEmpresa'
+});
+
 module.exports = {
   Empresa,
   Pago,
@@ -81,5 +110,7 @@ module.exports = {
   PermisoRolRecurso,
   Recurso,
   Rol,
+  TipoEmpresa,
   Usuario,
+  UsuarioEmpresa,
 };

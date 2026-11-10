@@ -32,6 +32,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.TINYINT,
       allowNull: true,
       defaultValue: 1
+    },
+    FechaCreacion: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('getdate')
     }
   }, {
     sequelize,

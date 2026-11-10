@@ -13,8 +13,7 @@ module.exports = function(sequelize, DataTypes) {
       references: {
         model: 'Empresa',
         key: 'CodigoEmpresa'
-      },
-      unique: "Uq_AdUsuario_NombreUsuario"
+      }
     },
     CodigoRol: {
       type: DataTypes.INTEGER,
@@ -45,6 +44,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.TINYINT,
       allowNull: false,
       defaultValue: 1
+    },
+    FechaCreacion: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('getdate')
     }
   }, {
     sequelize,
@@ -63,7 +67,6 @@ module.exports = function(sequelize, DataTypes) {
         name: "Uq_AdUsuario_NombreUsuario",
         unique: true,
         fields: [
-          { name: "CodigoEmpresa" },
           { name: "NombreUsuario" },
         ]
       },
