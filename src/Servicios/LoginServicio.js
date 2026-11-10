@@ -1,5 +1,5 @@
 const { GenerarToken, CompararClaves } = require("../Configuracion/AutorizacionConfiguracion");
-const { Usuario, Rol, Empresa } = require('../Modelos/Relaciones');
+const { Usuario, Rol, Empresa, UsuarioEmpresa } = require('../Modelos/Relaciones');
 const { LanzarError } = require('../Utilidades/ErrorServicios');
 const { ObtenerPermisosFrontEnd } = require('../Servicios/PermisoRolRecursoServicio');
 
@@ -96,11 +96,33 @@ const IniciarSesionServicio = async (NombreUsuario, Clave) => {
   if (usuario.Rol_CodigoRol.Estatus !== 1) {
     throw LanzarError("Rol inactivo", 403);
   }
-  if (!usuario.Empresa_CodigoEmpresa) {
-    throw LanzarError("Empresa no asignada al usuario", 403);
+  let EmpresaAcceso = usuario.Empresa_CodigoEmpresa?.Estatus === 1
+    ? usuario.Empresa_CodigoEmpresa
+    : null;
+
+  if (!EmpresaAcceso) {
+    const AsociacionPrincipal = await UsuarioEmpresa.findOne({
+      where: {
+        CodigoUsuario: usuario.CodigoUsuario,
+        Estatus: 1
+      },
+      include: [{
+        model: Empresa,
+        as: 'Empresa_CodigoEmpresa',
+        attributes: ['CodigoEmpresa', 'NombreEmpresa', 'Estatus'],
+        where: { Estatus: 1 },
+        required: true
+      }],
+      order: [
+        ['EsEmpresaPrincipal', 'DESC'],
+        ['CodigoUsuarioEmpresa', 'ASC']
+      ]
+    });
+    EmpresaAcceso = AsociacionPrincipal?.Empresa_CodigoEmpresa || null;
   }
-  if (usuario.Empresa_CodigoEmpresa.Estatus !== 1) {
-    throw LanzarError("Empresa inactiva", 403);
+
+  if (!EmpresaAcceso) {
+    throw LanzarError("Empresa no asignada o activa para el usuario", 403);
   }
 
   const permisos = await ObtenerPermisosFrontEnd(usuario.CodigoRol);
@@ -109,8 +131,8 @@ const IniciarSesionServicio = async (NombreUsuario, Clave) => {
     CodigoRol: usuario.CodigoRol,
     NombreUsuario: usuario.NombreUsuario,
     NombreRol: usuario.Rol_CodigoRol?.NombreRol || null,
-    CodigoEmpresa: usuario.CodigoEmpresa,
-    NombreEmpresa: usuario.Empresa_CodigoEmpresa?.NombreEmpresa || null,
+    CodigoEmpresa: EmpresaAcceso.CodigoEmpresa,
+    NombreEmpresa: EmpresaAcceso.NombreEmpresa || null,
     SuperAdmin: usuario.SuperAdmin
   });
 
@@ -121,8 +143,8 @@ const IniciarSesionServicio = async (NombreUsuario, Clave) => {
       NombreUsuario: usuario.NombreUsuario,
       CodigoRol: usuario.CodigoRol,
       NombreRol: usuario.Rol_CodigoRol?.NombreRol || null,
-      CodigoEmpresa: usuario.CodigoEmpresa,
-      NombreEmpresa: usuario.Empresa_CodigoEmpresa?.NombreEmpresa || null,
+      CodigoEmpresa: EmpresaAcceso.CodigoEmpresa,
+      NombreEmpresa: EmpresaAcceso.NombreEmpresa || null,
       SuperAdmin: usuario.SuperAdmin,
       AccesoCompleto: false,
       Permisos: permisos.Recursos
