@@ -22,7 +22,7 @@ const ManejarError = (error, res, mensajeError = 'Error inesperado', statusCodeD
   console.error(`[${tipo}] ${mensajeFinal}`, esDesarrollo ? detallesTecnicos : '');
 
   const respuesta = {
-    exito: false,
+    success: false,
     tipo,
     message: mensajeFinal,
     ...(esDesarrollo && { detalles: detallesTecnicos })
