@@ -14,10 +14,10 @@ const {
 const VerificarToken = require('../FuncionIntermedia/VerificarToken');
 const VerificarPermisos = require('../FuncionIntermedia/VerificarPermisos');
 
-Router.get(`/${Modelo}/listado`, VerificarToken, VerificarPermisos('Listado', Tabla), Listado);
-Router.get(`/${Modelo}/:Codigo`, VerificarToken, VerificarPermisos('Ver', Tabla), ObtenerPorCodigo);
-Router.post(`/${Modelo}/crear`, VerificarToken, VerificarPermisos('Crear', Tabla), Crear);
-Router.put(`/${Modelo}/editar/:Codigo`, VerificarToken, VerificarPermisos('Editar', Tabla), Editar);
-Router.delete(`/${Modelo}/eliminar/:Codigo`, VerificarToken, VerificarPermisos('Eliminar', Tabla), Eliminar);
+Router.get(`/${Modelo}/listado`, VerificarToken, VerificarPermisos('ListadoUsuarioEmpresa', Tabla), Listado);
+Router.get(`/${Modelo}/:Codigo`, VerificarToken, VerificarPermisos('VerUsuarioEmpresa', Tabla), ObtenerPorCodigo);
+Router.post(`/${Modelo}/crear`, VerificarToken, VerificarPermisos('CrearUsuarioEmpresa', Tabla), Crear);
+Router.put(`/${Modelo}/editar/:Codigo`, VerificarToken, VerificarPermisos('EditarUsuarioEmpresa', Tabla), Editar);
+Router.delete(`/${Modelo}/eliminar/:Codigo`, VerificarToken, VerificarPermisos('EliminarUsuarioEmpresa', Tabla), Eliminar);
 
 module.exports = Router;
