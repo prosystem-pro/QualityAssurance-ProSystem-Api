@@ -52,16 +52,6 @@ const GenerarModelos = async () => {
     ModelosTS[NombreModelo] = InterfazTS;
   }
 
-  ModelosTS["RespuestaBackend"] = `export interface RespuestaBackend {
-  success: boolean;
-  tipo: string;
-  message: string;
-  data?: any;
-  detalles?: any;
-}
-`;
-
-
   return ModelosTS;
 };
 
