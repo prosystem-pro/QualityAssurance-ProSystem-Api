@@ -5,8 +5,8 @@ const { ObtenerEmpresas } = require('../Controladores/DashboardControlador');
 const VerificarToken = require('../FuncionIntermedia/VerificarToken');
 const VerificarPermisos = require('../FuncionIntermedia/VerificarPermisos');
 
-const Tabla = 'UsuarioEmpresa';
+const Tabla = 'Dashboard';
 
-Router.get('/dashboard/empresas',VerificarToken,VerificarPermisos('ListadoDashboard', Tabla),ObtenerEmpresas);
+Router.get('/dashboard/empresas',VerificarToken,VerificarPermisos('ListadoDashboard', 'UsuarioEmpresa'),ObtenerEmpresas);
 
 module.exports = Router;
