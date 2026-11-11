@@ -2,6 +2,7 @@ const Jwt = require("jsonwebtoken");
 require("dotenv").config();
 const ManejarError = require('../Utilidades/ErrorControladores');
 const ResponderExito = require('../Utilidades/RespuestaExitosaControlador');
+const { LanzarError } = require('../Utilidades/ErrorServicios');
 
 const VerificarToken = (req, res, next) => {
   if (!process.env.CLAVE_SECRETA_TOKEN) {
@@ -14,15 +15,15 @@ const VerificarToken = (req, res, next) => {
 
   const Token = req.header("Authorization");
   if (!Token) {
-    return ResponderExito(res, "Acceso denegado, token requerido", null, 401);
+    LanzarError('Acceso denegado, token requerido', 401);
   }
 
   try {
     const TokenLimpio = Token.replace("Bearer ", "");
     const Decodificado = Jwt.verify(TokenLimpio, process.env.CLAVE_SECRETA_TOKEN);
-    
+
     req.Datos = Decodificado;
-    
+
     next();
   } catch (error) {
     return ManejarError(error, res, 'Token inválido o expirado');

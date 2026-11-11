@@ -24,7 +24,7 @@ const ManejarError = (error, res, mensajeError = 'Error inesperado', statusCodeD
   const respuesta = {
     exito: false,
     tipo,
-    mensaje: mensajeFinal,
+    message: mensajeFinal,
     ...(esDesarrollo && { detalles: detallesTecnicos })
   };
 

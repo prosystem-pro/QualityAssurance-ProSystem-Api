@@ -35,7 +35,7 @@ const GenerarModelos = async () => {
     }
 
     let InterfazTS = `export interface ${NombreModelo} {\n`;
-      
+
     for (const clave of Object.keys(modelo.rawAttributes)) {
       const tipoNombre = modelo.rawAttributes[clave].type.constructor.name.toLowerCase();
       let tipoTS = "any";
@@ -47,10 +47,20 @@ const GenerarModelos = async () => {
 
       InterfazTS += `  ${clave}: ${tipoTS};\n`;
     }
-      
+
     InterfazTS += "}\n";
     ModelosTS[NombreModelo] = InterfazTS;
   }
+
+  ModelosTS["RespuestaBackend"] = `export interface RespuestaBackend {
+  success: boolean;
+  tipo: string;
+  message: string;
+  data?: any;
+  detalles?: any;
+}
+`;
+
 
   return ModelosTS;
 };
