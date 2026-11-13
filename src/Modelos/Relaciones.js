@@ -1,5 +1,5 @@
 // ARCHIVO GENERADO AUTOMÁTICAMENTE — No editar manualmente
-// Generado el: 2026-11-13T18:03:11.031Z
+// Generado el: 2026-11-13T18:42:58.542Z
 // Nombre configurado en .env: Relaciones.js
 
 const Path = require('path');
@@ -50,7 +50,7 @@ Carpeta.belongsTo(Carpeta, {
 });
 Carpeta.hasMany(Carpeta, {
   foreignKey: 'CodigoCarpetaPadre',
-  as: 'Carpeta_CodigoCarpetaPadre'
+  as: 'CarpetaHijas_CodigoCarpetaPadre'
 });
 
 CasoPrueba.belongsTo(Carpeta, {

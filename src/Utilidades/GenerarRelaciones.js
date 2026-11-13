@@ -83,6 +83,10 @@ function generateCode(relations) {
 
   code += `\n// === RELACIONES ===\n`;
   relacionesValidas.forEach(r => {
+    const aliasHasMany = r.TableName === r.ReferencedTable
+      ? `${r.TableName}Hijas_${r.ColumnName}`
+      : `${r.TableName}_${r.ColumnName}`;
+
     code += `
 ${r.TableName}.belongsTo(${r.ReferencedTable}, {
   foreignKey: '${r.ColumnName}',
@@ -90,7 +94,7 @@ ${r.TableName}.belongsTo(${r.ReferencedTable}, {
 });
 ${r.ReferencedTable}.hasMany(${r.TableName}, {
   foreignKey: '${r.ColumnName}',
-  as: '${r.TableName}_${r.ColumnName}'
+  as: '${aliasHasMany}'
 });
 `;
   });
