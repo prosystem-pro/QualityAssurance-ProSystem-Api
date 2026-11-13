@@ -28,6 +28,14 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       unique: "Uq_AdUsuario_NombreUsuario"
     },
+    NombreCompleto: {
+      type: DataTypes.STRING(256),
+      allowNull: true
+    },
+    ApellidoCompleto: {
+      type: DataTypes.STRING(256),
+      allowNull: true
+    },
     ClaveHash: {
       type: DataTypes.STRING(256),
       allowNull: false
@@ -35,6 +43,19 @@ module.exports = function(sequelize, DataTypes) {
     ClaveSalt: {
       type: DataTypes.STRING(256),
       allowNull: false
+    },
+    Correo: {
+      type: DataTypes.STRING(256),
+      allowNull: true,
+      unique: "Uq_AdUsuario_Correo"
+    },
+    Telefono: {
+      type: DataTypes.STRING(16),
+      allowNull: true
+    },
+    Direccion: {
+      type: DataTypes.STRING(256),
+      allowNull: true
     },
     SuperAdmin: {
       type: DataTypes.TINYINT,
@@ -61,6 +82,13 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "CodigoUsuario" },
+        ]
+      },
+      {
+        name: "Uq_AdUsuario_Correo",
+        unique: true,
+        fields: [
+          { name: "Correo" },
         ]
       },
       {

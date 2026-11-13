@@ -1,5 +1,5 @@
 // ARCHIVO GENERADO AUTOMÁTICAMENTE — No editar manualmente
-// Generado el: 2026-11-10T19:15:44.275Z
+// Generado el: 2026-11-13T18:03:11.031Z
 // Nombre configurado en .env: Relaciones.js
 
 const Path = require('path');
@@ -8,14 +8,19 @@ const Sequelize = require('sequelize');
 
 const RutaModelos = Path.join(__dirname);
 
+const Carpeta = require(Path.join(RutaModelos, 'Carpeta.js'))(BaseDatos, Sequelize.DataTypes);
+const CasoPrueba = require(Path.join(RutaModelos, 'CasoPrueba.js'))(BaseDatos, Sequelize.DataTypes);
 const Empresa = require(Path.join(RutaModelos, 'Empresa.js'))(BaseDatos, Sequelize.DataTypes);
+const EstadoCaso = require(Path.join(RutaModelos, 'EstadoCaso.js'))(BaseDatos, Sequelize.DataTypes);
 const Pago = require(Path.join(RutaModelos, 'Pago.js'))(BaseDatos, Sequelize.DataTypes);
 const Pagos = require(Path.join(RutaModelos, 'Pagos.js'))(BaseDatos, Sequelize.DataTypes);
 const Permiso = require(Path.join(RutaModelos, 'Permiso.js'))(BaseDatos, Sequelize.DataTypes);
 const PermisoRolRecurso = require(Path.join(RutaModelos, 'PermisoRolRecurso.js'))(BaseDatos, Sequelize.DataTypes);
+const Prioridad = require(Path.join(RutaModelos, 'Prioridad.js'))(BaseDatos, Sequelize.DataTypes);
 const Recurso = require(Path.join(RutaModelos, 'Recurso.js'))(BaseDatos, Sequelize.DataTypes);
 const Rol = require(Path.join(RutaModelos, 'Rol.js'))(BaseDatos, Sequelize.DataTypes);
 const TipoEmpresa = require(Path.join(RutaModelos, 'TipoEmpresa.js'))(BaseDatos, Sequelize.DataTypes);
+const TipoPrueba = require(Path.join(RutaModelos, 'TipoPrueba.js'))(BaseDatos, Sequelize.DataTypes);
 const Usuario = require(Path.join(RutaModelos, 'Usuario.js'))(BaseDatos, Sequelize.DataTypes);
 const UsuarioEmpresa = require(Path.join(RutaModelos, 'UsuarioEmpresa.js'))(BaseDatos, Sequelize.DataTypes);
 
@@ -28,6 +33,60 @@ UsuarioEmpresa.belongsTo(Usuario, {
 Usuario.hasMany(UsuarioEmpresa, {
   foreignKey: 'CodigoUsuario',
   as: 'UsuarioEmpresa_CodigoUsuario'
+});
+
+CasoPrueba.belongsTo(Usuario, {
+  foreignKey: 'CodigoUsuario',
+  as: 'Usuario_CodigoUsuario'
+});
+Usuario.hasMany(CasoPrueba, {
+  foreignKey: 'CodigoUsuario',
+  as: 'CasoPrueba_CodigoUsuario'
+});
+
+Carpeta.belongsTo(Carpeta, {
+  foreignKey: 'CodigoCarpetaPadre',
+  as: 'Carpeta_CodigoCarpetaPadre'
+});
+Carpeta.hasMany(Carpeta, {
+  foreignKey: 'CodigoCarpetaPadre',
+  as: 'Carpeta_CodigoCarpetaPadre'
+});
+
+CasoPrueba.belongsTo(Carpeta, {
+  foreignKey: 'CodigoCarpeta',
+  as: 'Carpeta_CodigoCarpeta'
+});
+Carpeta.hasMany(CasoPrueba, {
+  foreignKey: 'CodigoCarpeta',
+  as: 'CasoPrueba_CodigoCarpeta'
+});
+
+CasoPrueba.belongsTo(TipoPrueba, {
+  foreignKey: 'CodigoTipoPrueba',
+  as: 'TipoPrueba_CodigoTipoPrueba'
+});
+TipoPrueba.hasMany(CasoPrueba, {
+  foreignKey: 'CodigoTipoPrueba',
+  as: 'CasoPrueba_CodigoTipoPrueba'
+});
+
+CasoPrueba.belongsTo(Prioridad, {
+  foreignKey: 'CodigoPrioridad',
+  as: 'Prioridad_CodigoPrioridad'
+});
+Prioridad.hasMany(CasoPrueba, {
+  foreignKey: 'CodigoPrioridad',
+  as: 'CasoPrueba_CodigoPrioridad'
+});
+
+CasoPrueba.belongsTo(EstadoCaso, {
+  foreignKey: 'CodigoEstadoCaso',
+  as: 'EstadoCaso_CodigoEstadoCaso'
+});
+EstadoCaso.hasMany(CasoPrueba, {
+  foreignKey: 'CodigoEstadoCaso',
+  as: 'CasoPrueba_CodigoEstadoCaso'
 });
 
 Usuario.belongsTo(Rol, {
@@ -103,14 +162,19 @@ TipoEmpresa.hasMany(Empresa, {
 });
 
 module.exports = {
+  Carpeta,
+  CasoPrueba,
   Empresa,
+  EstadoCaso,
   Pago,
   Pagos,
   Permiso,
   PermisoRolRecurso,
+  Prioridad,
   Recurso,
   Rol,
   TipoEmpresa,
+  TipoPrueba,
   Usuario,
   UsuarioEmpresa,
 };

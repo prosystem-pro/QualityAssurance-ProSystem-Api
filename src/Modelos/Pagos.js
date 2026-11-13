@@ -17,11 +17,11 @@ module.exports = function(sequelize, DataTypes) {
     },
     FechaDeposito: {
       type: DataTypes.DATEONLY,
-      allowNull: true
+      allowNull: false
     },
     FechaVencimientoPago: {
       type: DataTypes.DATEONLY,
-      allowNull: true
+      allowNull: false
     },
     FechaRegistro: {
       type: DataTypes.DATE,
@@ -37,11 +37,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     UrlComprobante: {
-      type: DataTypes.STRING(500),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     Observaciones: {
-      type: DataTypes.STRING(500),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     Estatus: {

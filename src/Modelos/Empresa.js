@@ -17,7 +17,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     NombreEmpresa: {
       type: DataTypes.STRING(64),
-      allowNull: true,
+      allowNull: false,
       unique: "Uq_AdEmpresa_NombreEmpresa"
     },
     RazonSocial: {
@@ -26,7 +26,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     NIT: {
       type: DataTypes.STRING(32),
-      allowNull: true
+      allowNull: true,
+      unique: "Uq_AdEmpresa_NIT"
     },
     NombrePropietario: {
       type: DataTypes.STRING(64),
@@ -58,7 +59,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     Eslogan: {
       type: DataTypes.STRING(128),
-      allowNull: false
+      allowNull: true
     },
     Estatus: {
       type: DataTypes.TINYINT,
@@ -85,6 +86,13 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "CodigoEmpresa" },
+        ]
+      },
+      {
+        name: "Uq_AdEmpresa_NIT",
+        unique: true,
+        fields: [
+          { name: "NIT" },
         ]
       },
       {
