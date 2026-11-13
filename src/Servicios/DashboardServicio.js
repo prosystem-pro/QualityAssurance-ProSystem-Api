@@ -66,16 +66,7 @@ const ObtenerEmpresas = async ({ CodigoUsuario, SuperAdmin }) => {
         include: [CrearIncluirTipoEmpresa()]
       }]
     }),
-    Usuario.findByPk(Codigo, {
-      attributes: ['CodigoEmpresa', 'Estatus'],
-      include: [{
-        model: Empresa,
-        as: 'Empresa_CodigoEmpresa',
-        attributes: AtributosEmpresa,
-        required: false,
-        include: [CrearIncluirTipoEmpresa()]
-      }]
-    })
+    Usuario.findByPk(Codigo, { attributes: ['Estatus'] })
   ]);
 
   if (!UsuarioActual || UsuarioActual.Estatus !== 1) {
@@ -90,18 +81,6 @@ const ObtenerEmpresas = async ({ CodigoUsuario, SuperAdmin }) => {
     EmpresasPorCodigo.set(EmpresaActual.CodigoEmpresa, {
       ...EmpresaActual.toJSON(),
       EsEmpresaPrincipal: Asociacion.EsEmpresaPrincipal === 1
-    });
-  }
-
-  const EmpresaDirecta = UsuarioActual?.Empresa_CodigoEmpresa;
-  if (
-    EmpresaDirecta &&
-    [1, 2].includes(EmpresaDirecta.Estatus) &&
-    !EmpresasPorCodigo.has(EmpresaDirecta.CodigoEmpresa)
-  ) {
-    EmpresasPorCodigo.set(EmpresaDirecta.CodigoEmpresa, {
-      ...EmpresaDirecta.toJSON(),
-      EsEmpresaPrincipal: true
     });
   }
 
