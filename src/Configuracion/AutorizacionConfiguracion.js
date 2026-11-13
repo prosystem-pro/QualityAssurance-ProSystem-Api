@@ -5,13 +5,14 @@ const { LanzarError } = require("../Utilidades/ErrorServicios");
 
 const GenerarToken = (datos) => {
   if (!process.env.CLAVE_SECRETA_TOKEN) {
-    throw LanzarError("CLAVE_SECRETA_TOKEN no configurada en el entorno", 500, "Configuracion");
+    throw LanzarError("CLAVE_SECRETA_TOKEN no configurada en el entorno", 500);
   }
   if (!process.env.EXPIRACION_TOKEN) {
-    throw LanzarError("EXPIRACION_TOKEN no configurada en el entorno", 500, "Configuracion");
+    throw LanzarError("EXPIRACION_TOKEN no configurada en el entorno", 500);
   }
-  if (!datos || !datos.CodigoUsuario) {
-    throw LanzarError("Datos insuficientes para generar el token", 400, "Validacion");
+
+  if (!datos || datos.CodigoUsuario === undefined || datos.CodigoUsuario === null) {
+    throw LanzarError("Datos insuficientes para generar el token", 400);
   }
 
   return Jwt.sign(
@@ -31,7 +32,7 @@ const GenerarToken = (datos) => {
 
 const EncriptarClave = async (clave) => {
   if (!clave || clave.length < 4) {
-    throw LanzarError("La clave es inválida o demasiado corta", 400, "Validacion");
+    throw LanzarError("La clave es inválida o demasiado corta", 400);
   }
   const Salt = await Bcrypt.genSalt(10);
   const Hash = await Bcrypt.hash(clave, Salt);
@@ -40,10 +41,10 @@ const EncriptarClave = async (clave) => {
 
 const CompararClaves = async (clave, hash) => {
   if (!clave) {
-    throw LanzarError("La clave es requerida para comparar", 400, "Validacion");
+    throw LanzarError("La clave es requerida para comparar", 400);
   }
   if (!hash) {
-    throw LanzarError("El hash es requerido para comparar", 400, "Validacion");
+    throw LanzarError("El hash es requerido para comparar", 400);
   }
   return await Bcrypt.compare(clave, hash);
 };
