@@ -46,8 +46,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     Correo: {
       type: DataTypes.STRING(256),
-      allowNull: true,
-      unique: "Uq_AdUsuario_Correo"
+      allowNull: true
     },
     Telefono: {
       type: DataTypes.STRING(16),
@@ -82,13 +81,6 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "CodigoUsuario" },
-        ]
-      },
-      {
-        name: "Uq_AdUsuario_Correo",
-        unique: true,
-        fields: [
-          { name: "Correo" },
         ]
       },
       {

@@ -24,6 +24,15 @@ const Crear = async (Datos) => {
     throw LanzarError('No se puede asignar un valor a la columna Super Administrador', 400); 
   }
 
+  if (Datos.Correo && Datos.Correo.trim() !== '') {
+    const correoExistente = await Modelo.findOne({ 
+      where: { Correo: Datos.Correo } 
+    });
+    if (correoExistente) {
+      throw LanzarError('El correo electrónico ya se encuentra registrado', 400);
+    }
+  }
+
   const { Salt, Hash } = await EncriptarClave(Datos.Clave);
   Datos.ClaveHash = Hash;
   Datos.ClaveSalt = Salt;
@@ -46,6 +55,20 @@ const Editar = async (Codigo, Datos) => {
       throw LanzarError('No se puede modificar la columna Super Administrador de este registro', 400); 
     }
     delete Datos.SuperAdmin;
+  }
+
+
+  if (Datos.Correo && Datos.Correo.trim() !== '') {
+    const { Op } = require('sequelize'); 
+    const correoExistente = await Modelo.findOne({ 
+      where: { 
+        Correo: Datos.Correo,
+        [CodigoModelo]: { [Op.ne]: Codigo } 
+      } 
+    });
+    if (correoExistente) {
+      throw LanzarError('El correo electrónico ya se encuentra registrado por otro usuario', 400);
+    }
   }
 
   if (Datos.Clave && Datos.Clave.trim() !== '') {

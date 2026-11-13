@@ -1,5 +1,5 @@
 // ARCHIVO GENERADO AUTOMÁTICAMENTE — No editar manualmente
-// Generado el: 2026-11-13T18:42:58.542Z
+// Generado el: 2026-11-13T19:15:53.503Z
 // Nombre configurado en .env: Relaciones.js
 
 const Path = require('path');
