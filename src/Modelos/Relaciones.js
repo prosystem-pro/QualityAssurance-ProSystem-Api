@@ -1,5 +1,5 @@
 // ARCHIVO GENERADO AUTOMÁTICAMENTE — No editar manualmente
-// Generado el: 2026-11-13T19:15:53.503Z
+// Generado el: 2026-11-13T23:25:32.890Z
 // Nombre configurado en .env: Relaciones.js
 
 const Path = require('path');
@@ -44,24 +44,6 @@ Usuario.hasMany(CasoPrueba, {
   as: 'CasoPrueba_CodigoUsuario'
 });
 
-Carpeta.belongsTo(Carpeta, {
-  foreignKey: 'CodigoCarpetaPadre',
-  as: 'Carpeta_CodigoCarpetaPadre'
-});
-Carpeta.hasMany(Carpeta, {
-  foreignKey: 'CodigoCarpetaPadre',
-  as: 'CarpetaHijas_CodigoCarpetaPadre'
-});
-
-CasoPrueba.belongsTo(Carpeta, {
-  foreignKey: 'CodigoCarpeta',
-  as: 'Carpeta_CodigoCarpeta'
-});
-Carpeta.hasMany(CasoPrueba, {
-  foreignKey: 'CodigoCarpeta',
-  as: 'CasoPrueba_CodigoCarpeta'
-});
-
 CasoPrueba.belongsTo(TipoPrueba, {
   foreignKey: 'CodigoTipoPrueba',
   as: 'TipoPrueba_CodigoTipoPrueba'
@@ -87,6 +69,24 @@ CasoPrueba.belongsTo(EstadoCaso, {
 EstadoCaso.hasMany(CasoPrueba, {
   foreignKey: 'CodigoEstadoCaso',
   as: 'CasoPrueba_CodigoEstadoCaso'
+});
+
+Carpeta.belongsTo(Carpeta, {
+  foreignKey: 'CodigoCarpetaPadre',
+  as: 'Carpeta_CodigoCarpetaPadre'
+});
+Carpeta.hasMany(Carpeta, {
+  foreignKey: 'CodigoCarpetaPadre',
+  as: 'CarpetaHijas_CodigoCarpetaPadre'
+});
+
+CasoPrueba.belongsTo(Carpeta, {
+  foreignKey: 'CodigoCarpeta',
+  as: 'Carpeta_CodigoCarpeta'
+});
+Carpeta.hasMany(CasoPrueba, {
+  foreignKey: 'CodigoCarpeta',
+  as: 'CasoPrueba_CodigoCarpeta'
 });
 
 Usuario.belongsTo(Rol, {
@@ -141,6 +141,24 @@ Usuario.belongsTo(Empresa, {
 Empresa.hasMany(Usuario, {
   foreignKey: 'CodigoEmpresa',
   as: 'Usuario_CodigoEmpresa'
+});
+
+Carpeta.belongsTo(Empresa, {
+  foreignKey: 'CodigoEmpresa',
+  as: 'Empresa_CodigoEmpresa'
+});
+Empresa.hasMany(Carpeta, {
+  foreignKey: 'CodigoEmpresa',
+  as: 'Carpeta_CodigoEmpresa'
+});
+
+CasoPrueba.belongsTo(Empresa, {
+  foreignKey: 'CodigoEmpresa',
+  as: 'Empresa_CodigoEmpresa'
+});
+Empresa.hasMany(CasoPrueba, {
+  foreignKey: 'CodigoEmpresa',
+  as: 'CasoPrueba_CodigoEmpresa'
 });
 
 Pagos.belongsTo(Empresa, {

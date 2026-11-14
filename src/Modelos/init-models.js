@@ -36,6 +36,10 @@ function initModels(sequelize) {
   Empresa.hasMany(Usuario, { as: "Usuarios", foreignKey: "CodigoEmpresa"});
   UsuarioEmpresa.belongsTo(Empresa, { as: "CodigoEmpresa_Empresa", foreignKey: "CodigoEmpresa"});
   Empresa.hasMany(UsuarioEmpresa, { as: "UsuarioEmpresas", foreignKey: "CodigoEmpresa"});
+  Carpeta.belongsTo(Empresa, { as: "CodigoEmpresa_Empresa", foreignKey: "CodigoEmpresa"});
+  Empresa.hasMany(Carpeta, { as: "Carpeta", foreignKey: "CodigoEmpresa"});
+  CasoPrueba.belongsTo(Empresa, { as: "CodigoEmpresa_Empresa", foreignKey: "CodigoEmpresa"});
+  Empresa.hasMany(CasoPrueba, { as: "CasoPruebas", foreignKey: "CodigoEmpresa"});
   PermisoRolRecurso.belongsTo(Permiso, { as: "CodigoPermiso_Permiso", foreignKey: "CodigoPermiso"});
   Permiso.hasMany(PermisoRolRecurso, { as: "PermisoRolRecursos", foreignKey: "CodigoPermiso"});
   PermisoRolRecurso.belongsTo(Recurso, { as: "CodigoRecurso_Recurso", foreignKey: "CodigoRecurso"});

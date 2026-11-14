@@ -7,6 +7,14 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       primaryKey: true
     },
+    CodigoEmpresa: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Empresa',
+        key: 'CodigoEmpresa'
+      }
+    },
     NombreCarpeta: {
       type: DataTypes.STRING(128),
       allowNull: false
@@ -45,7 +53,7 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: false,
     indexes: [
       {
-        name: "Pk_AdCarpeta_CodigoCarpeta",
+        name: "Pk_QaCarpeta_CodigoCarpeta",
         unique: true,
         fields: [
           { name: "CodigoCarpeta" },
