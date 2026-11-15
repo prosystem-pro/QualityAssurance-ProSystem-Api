@@ -1,4 +1,4 @@
-const Servicio = require('../Servicios/CasosDeUsoServicio');
+const Servicio = require('../Servicios/CasosDePruebaServicio');
 const ManejarError = require('../Utilidades/ErrorControladores');
 const ResponderExito = require('../Utilidades/RespuestaExitosaControlador');
 
@@ -152,7 +152,7 @@ const EliminarEstadoCaso = async (req, res) => {
 // CRUD de Carpeta
 const ListadoCarpeta = async (req, res) => {
   try {
-    const Objeto = await Servicio.ListadoCarpeta();
+    const Objeto = await Servicio.ListadoCarpeta(req.query.CodigoEmpresa, req.Datos);
     return ResponderExito(res, 'Listado obtenido correctamente.', Objeto || []);
   } catch (error) {
     return ManejarError(error, res, 'Error al obtener las carpetas');
@@ -162,7 +162,7 @@ const ListadoCarpeta = async (req, res) => {
 const ObtenerCarpetaPorCodigo = async (req, res) => {
   try {
     const { Codigo } = req.params;
-    const Objeto = await Servicio.ObtenerCarpetaPorCodigo(Codigo);
+    const Objeto = await Servicio.ObtenerCarpetaPorCodigo(Codigo, req.query.CodigoEmpresa, req.Datos);
     return ResponderExito(res, 'Registro obtenido correctamente.', Objeto);
   } catch (error) {
     return ManejarError(error, res, 'Error al obtener la carpeta');
@@ -171,7 +171,7 @@ const ObtenerCarpetaPorCodigo = async (req, res) => {
 
 const CrearCarpeta = async (req, res) => {
   try {
-    const Creado = await Servicio.CrearCarpeta(req.body);
+    const Creado = await Servicio.CrearCarpeta(req.body, req.query.CodigoEmpresa, req.Datos);
     return ResponderExito(res, 'Se guardó el registro exitosamente.', Creado, 201);
   } catch (error) {
     return ManejarError(error, res, 'Error al crear la carpeta');
@@ -181,7 +181,7 @@ const CrearCarpeta = async (req, res) => {
 const EditarCarpeta = async (req, res) => {
   try {
     const { Codigo } = req.params;
-    const Actualizado = await Servicio.EditarCarpeta(Codigo, req.body);
+    const Actualizado = await Servicio.EditarCarpeta(Codigo, req.body, req.query.CodigoEmpresa, req.Datos);
     return ResponderExito(res, 'Se actualizó el registro exitosamente.', Actualizado);
   } catch (error) {
     return ManejarError(error, res, 'Error al actualizar la carpeta');
@@ -191,7 +191,7 @@ const EditarCarpeta = async (req, res) => {
 const EliminarCarpeta = async (req, res) => {
   try {
     const { Codigo } = req.params;
-    const Eliminado = await Servicio.EliminarCarpeta(Codigo);
+    const Eliminado = await Servicio.EliminarCarpeta(Codigo, req.query.CodigoEmpresa, req.Datos);
     return ResponderExito(res, 'Registro eliminado exitosamente.', Eliminado);
   } catch (error) {
     return ManejarError(error, res, 'Error al eliminar la carpeta');
@@ -201,7 +201,7 @@ const EliminarCarpeta = async (req, res) => {
 // CRUD de CasoPrueba
 const ListadoCasoPrueba = async (req, res) => {
   try {
-    const Objeto = await Servicio.ListadoCasoPrueba();
+    const Objeto = await Servicio.ListadoCasoPrueba(req.query.CodigoEmpresa, req.Datos);
     return ResponderExito(res, 'Listado obtenido correctamente.', Objeto || []);
   } catch (error) {
     return ManejarError(error, res, 'Error al obtener los casos de prueba');
@@ -211,7 +211,7 @@ const ListadoCasoPrueba = async (req, res) => {
 const ObtenerCasoPruebaPorCodigo = async (req, res) => {
   try {
     const { Codigo } = req.params;
-    const Objeto = await Servicio.ObtenerCasoPruebaPorCodigo(Codigo);
+    const Objeto = await Servicio.ObtenerCasoPruebaPorCodigo(Codigo, req.query.CodigoEmpresa, req.Datos);
     return ResponderExito(res, 'Registro obtenido correctamente.', Objeto);
   } catch (error) {
     return ManejarError(error, res, 'Error al obtener el caso de prueba');
@@ -220,7 +220,7 @@ const ObtenerCasoPruebaPorCodigo = async (req, res) => {
 
 const CrearCasoPrueba = async (req, res) => {
   try {
-    const Creado = await Servicio.CrearCasoPrueba(req.body);
+    const Creado = await Servicio.CrearCasoPrueba(req.body, req.query.CodigoEmpresa, req.Datos);
     return ResponderExito(res, 'Se guardó el registro exitosamente.', Creado, 201);
   } catch (error) {
     return ManejarError(error, res, 'Error al crear el caso de prueba');
@@ -230,7 +230,7 @@ const CrearCasoPrueba = async (req, res) => {
 const EditarCasoPrueba = async (req, res) => {
   try {
     const { Codigo } = req.params;
-    const Actualizado = await Servicio.EditarCasoPrueba(Codigo, req.body);
+    const Actualizado = await Servicio.EditarCasoPrueba(Codigo, req.body, req.query.CodigoEmpresa, req.Datos);
     return ResponderExito(res, 'Se actualizó el registro exitosamente.', Actualizado);
   } catch (error) {
     return ManejarError(error, res, 'Error al actualizar el caso de prueba');
@@ -240,7 +240,7 @@ const EditarCasoPrueba = async (req, res) => {
 const EliminarCasoPrueba = async (req, res) => {
   try {
     const { Codigo } = req.params;
-    const Eliminado = await Servicio.EliminarCasoPrueba(Codigo);
+    const Eliminado = await Servicio.EliminarCasoPrueba(Codigo, req.query.CodigoEmpresa, req.Datos);
     return ResponderExito(res, 'Registro eliminado exitosamente.', Eliminado);
   } catch (error) {
     return ManejarError(error, res, 'Error al eliminar el caso de prueba');

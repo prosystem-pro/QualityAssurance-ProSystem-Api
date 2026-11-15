@@ -1,5 +1,5 @@
 // ARCHIVO GENERADO AUTOMÁTICAMENTE — No editar manualmente
-// Generado el: 2026-11-14T01:01:28.673Z
+// Generado el: 2026-11-15T17:49:19.977Z
 // Nombre configurado en .env: Relaciones.js
 
 const Path = require('path');
@@ -10,6 +10,7 @@ const RutaModelos = Path.join(__dirname);
 
 const Carpeta = require(Path.join(RutaModelos, 'Carpeta.js'))(BaseDatos, Sequelize.DataTypes);
 const CasoPrueba = require(Path.join(RutaModelos, 'CasoPrueba.js'))(BaseDatos, Sequelize.DataTypes);
+const CasoPruebaPaso = require(Path.join(RutaModelos, 'CasoPruebaPaso.js'))(BaseDatos, Sequelize.DataTypes);
 const Empresa = require(Path.join(RutaModelos, 'Empresa.js'))(BaseDatos, Sequelize.DataTypes);
 const EstadoCaso = require(Path.join(RutaModelos, 'EstadoCaso.js'))(BaseDatos, Sequelize.DataTypes);
 const Pago = require(Path.join(RutaModelos, 'Pago.js'))(BaseDatos, Sequelize.DataTypes);
@@ -182,6 +183,7 @@ TipoEmpresa.hasMany(Empresa, {
 module.exports = {
   Carpeta,
   CasoPrueba,
+  CasoPruebaPaso,
   Empresa,
   EstadoCaso,
   Pago,

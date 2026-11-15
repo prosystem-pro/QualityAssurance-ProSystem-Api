@@ -1,7 +1,7 @@
 const Express = require('express');
 const Router = Express.Router();
 
-const ModeloTipoPrueba = 'casosdeuso';
+const ModeloTipoPrueba = 'tipoprueba';
 const ModeloPrioridad = 'prioridad';
 const ModeloEstadoCaso = 'estadocaso';
 const ModeloCarpeta = 'carpeta';
@@ -35,7 +35,7 @@ const {
   CrearCasoPrueba,
   EditarCasoPrueba,
   EliminarCasoPrueba
-} = require('../Controladores/CasosDeUsoControlador');
+} = require('../Controladores/CasosDePruebaControlador');
 const VerificarToken = require('../FuncionIntermedia/VerificarToken');
 const VerificarPermisos = require('../FuncionIntermedia/VerificarPermisos');
 
