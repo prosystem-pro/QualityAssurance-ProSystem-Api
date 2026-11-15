@@ -1,3 +1,4 @@
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('CasoPruebaPaso', {
     CodigoCasoPruebaPaso: {
@@ -25,6 +26,16 @@ module.exports = function(sequelize, DataTypes) {
     ResultadoEsperado: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    FechaCreacion: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('getdate')
+    },
+    FechaUltimaModificacion: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('getdate')
     }
   }, {
     sequelize,
@@ -33,7 +44,7 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: false,
     indexes: [
       {
-        name: "Pk_QaCasoPruebaPaso_CodigoCasoPruebaPaso",
+        name: "Pk_QaCasoPruebaPaso",
         unique: true,
         fields: [
           { name: "CodigoCasoPruebaPaso" },

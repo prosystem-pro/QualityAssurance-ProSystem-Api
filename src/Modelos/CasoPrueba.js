@@ -21,7 +21,8 @@ module.exports = function(sequelize, DataTypes) {
       references: {
         model: 'Carpeta',
         key: 'CodigoCarpeta'
-      }
+      },
+      unique: "Uq_QaCasoPrueba_Carpeta_Titulo"
     },
     CodigoPrioridad: {
       type: DataTypes.INTEGER,
@@ -55,10 +56,14 @@ module.exports = function(sequelize, DataTypes) {
         key: 'CodigoUsuario'
       }
     },
+    Etiquetas: {
+      type: DataTypes.STRING(512),
+      allowNull: true
+    },
     Titulo: {
       type: DataTypes.STRING(256),
       allowNull: false,
-      unique: "Uq_QaCasoPrueba_Titulo"
+      unique: "Uq_QaCasoPrueba_Carpeta_Titulo"
     },
     Descripcion: {
       type: DataTypes.TEXT,
@@ -68,16 +73,22 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    Pasos: {
-      type: DataTypes.TEXT,
-      allowNull: false
+    TipoPlantilla: {
+      type: DataTypes.TINYINT,
+      allowNull: false,
+      defaultValue: 1
     },
-    ResultadoEsperado: {
-      type: DataTypes.TEXT,
-      allowNull: false
+    EsAutomatizado: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     },
-    Etiquetas: {
-      type: DataTypes.STRING(512),
+    TiempoEstimadoMinutos: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    EscenarioBdd: {
+      type: DataTypes.TEXT,
       allowNull: true
     },
     Estatus: {
@@ -109,9 +120,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "Uq_QaCasoPrueba_Titulo",
+        name: "Uq_QaCasoPrueba_Carpeta_Titulo",
         unique: true,
         fields: [
+          { name: "CodigoCarpeta" },
           { name: "Titulo" },
         ]
       },

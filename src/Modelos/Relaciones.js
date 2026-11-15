@@ -1,5 +1,5 @@
 // ARCHIVO GENERADO AUTOMÁTICAMENTE — No editar manualmente
-// Generado el: 2026-11-15T17:49:19.977Z
+// Generado el: 2026-11-15T18:04:56.335Z
 // Nombre configurado en .env: Relaciones.js
 
 const Path = require('path');
@@ -124,6 +124,15 @@ PermisoRolRecurso.belongsTo(Permiso, {
 Permiso.hasMany(PermisoRolRecurso, {
   foreignKey: 'CodigoPermiso',
   as: 'PermisoRolRecurso_CodigoPermiso'
+});
+
+CasoPruebaPaso.belongsTo(CasoPrueba, {
+  foreignKey: 'CodigoCasoPrueba',
+  as: 'CasoPrueba_CodigoCasoPrueba'
+});
+CasoPrueba.hasMany(CasoPruebaPaso, {
+  foreignKey: 'CodigoCasoPrueba',
+  as: 'CasoPruebaPaso_CodigoCasoPrueba'
 });
 
 UsuarioEmpresa.belongsTo(Empresa, {

@@ -1,6 +1,7 @@
 var DataTypes = require("sequelize").DataTypes;
 var _Carpeta = require("./Carpeta");
 var _CasoPrueba = require("./CasoPrueba");
+var _CasoPruebaPaso = require("./CasoPruebaPaso");
 var _Empresa = require("./Empresa");
 var _EstadoCaso = require("./EstadoCaso");
 var _Pagos = require("./Pagos");
@@ -17,6 +18,7 @@ var _UsuarioEmpresa = require("./UsuarioEmpresa");
 function initModels(sequelize) {
   var Carpeta = _Carpeta(sequelize, DataTypes);
   var CasoPrueba = _CasoPrueba(sequelize, DataTypes);
+  var CasoPruebaPaso = _CasoPruebaPaso(sequelize, DataTypes);
   var Empresa = _Empresa(sequelize, DataTypes);
   var EstadoCaso = _EstadoCaso(sequelize, DataTypes);
   var Pagos = _Pagos(sequelize, DataTypes);
@@ -58,6 +60,8 @@ function initModels(sequelize) {
   Carpeta.hasMany(Carpeta, { as: "Carpeta", foreignKey: "CodigoCarpetaPadre"});
   CasoPrueba.belongsTo(Carpeta, { as: "CodigoCarpeta_Carpetum", foreignKey: "CodigoCarpeta"});
   Carpeta.hasMany(CasoPrueba, { as: "CasoPruebas", foreignKey: "CodigoCarpeta"});
+  CasoPruebaPaso.belongsTo(CasoPrueba, { as: "CodigoCasoPrueba_CasoPrueba", foreignKey: "CodigoCasoPrueba"});
+  CasoPrueba.hasMany(CasoPruebaPaso, { as: "CasoPruebaPasos", foreignKey: "CodigoCasoPrueba"});
   CasoPrueba.belongsTo(EstadoCaso, { as: "CodigoEstadoCaso_EstadoCaso", foreignKey: "CodigoEstadoCaso"});
   EstadoCaso.hasMany(CasoPrueba, { as: "CasoPruebas", foreignKey: "CodigoEstadoCaso"});
   CasoPrueba.belongsTo(Prioridad, { as: "CodigoPrioridad_Prioridad", foreignKey: "CodigoPrioridad"});
@@ -68,6 +72,7 @@ function initModels(sequelize) {
   return {
     Carpeta,
     CasoPrueba,
+    CasoPruebaPaso,
     Empresa,
     EstadoCaso,
     Pagos,
