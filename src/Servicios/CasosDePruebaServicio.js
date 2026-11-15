@@ -87,12 +87,40 @@ const ValidarDatosCasoPrueba = (Datos, PlantillaActual = 1) => {
   return TipoPlantilla;
 };
 
+const ObtenerAsociacionPasosCasoPrueba = () => {
+  const Asociacion = Object.values(CasoPrueba.associations || {}).find((Relacion) =>
+    Relacion.target === CasoPruebaPaso &&
+    Relacion.associationType === 'HasMany' &&
+    Relacion.foreignKey === 'CodigoCasoPrueba'
+  );
+  if (!Asociacion) {
+    throw LanzarError(
+      'Falta la relación de CasoPrueba con CasoPruebaPaso en la base de datos. Agregue la clave foránea y regenere las relaciones.',
+      500,
+      'Configuracion'
+    );
+  }
+  return Asociacion;
+};
+
 const CrearIncluirPasosCasoPrueba = () => ({
-  model: CasoPruebaPaso,
-  as: 'Pasos',
+  association: ObtenerAsociacionPasosCasoPrueba(),
   separate: true,
   order: [['Orden', 'ASC']]
 });
+
+const NormalizarCasoPruebaParaRespuesta = (Caso) => {
+  if (!Caso) return Caso;
+
+  const Asociacion = ObtenerAsociacionPasosCasoPrueba();
+  const DatosCaso = typeof Caso.get === 'function'
+    ? Caso.get({ plain: true })
+    : { ...Caso };
+  const Pasos = DatosCaso[Asociacion.as] || [];
+  if (Asociacion.as !== 'Pasos') delete DatosCaso[Asociacion.as];
+  DatosCaso.Pasos = Pasos;
+  return DatosCaso;
+};
 
 const ValidarAccesoEmpresa = async (CodigoEmpresaSolicitado, DatosUsuario) => {
   const CodigoEmpresa = Number(CodigoEmpresaSolicitado);
@@ -453,7 +481,7 @@ const EliminarCarpeta = async (Codigo, CodigoEmpresaSolicitado, DatosUsuario) =>
 // Operaciones de casos de prueba
 const ListadoCasoPrueba = async (CodigoEmpresaSolicitado, DatosUsuario) => {
   const CodigoEmpresa = await ValidarAccesoEmpresa(CodigoEmpresaSolicitado, DatosUsuario);
-  return await CasoPrueba.findAll({
+  const Casos = await CasoPrueba.findAll({
     where: {
       [CodigoEmpresaModelo]: CodigoEmpresa,
       Estatus: { [Op.in]: [1, 2] }
@@ -461,6 +489,7 @@ const ListadoCasoPrueba = async (CodigoEmpresaSolicitado, DatosUsuario) => {
     include: [CrearIncluirPasosCasoPrueba()],
     order: [[TituloCasoPrueba, 'ASC']]
   });
+  return Casos.map(NormalizarCasoPruebaParaRespuesta);
 };
 
 const ObtenerCasoPruebaPorCodigo = async (Codigo, CodigoEmpresaSolicitado, DatosUsuario) => {
@@ -470,7 +499,7 @@ const ObtenerCasoPruebaPorCodigo = async (Codigo, CodigoEmpresaSolicitado, Datos
     include: [CrearIncluirPasosCasoPrueba()]
   });
   if (!Objeto) throw LanzarError('Registro no encontrado', 404);
-  return Objeto;
+  return NormalizarCasoPruebaParaRespuesta(Objeto);
 };
 
 const CrearCasoPrueba = async (Datos, CodigoEmpresaSolicitado, DatosUsuario) => {
@@ -503,11 +532,12 @@ const CrearCasoPrueba = async (Datos, CodigoEmpresaSolicitado, DatosUsuario) => 
         CodigoCasoPrueba: Creado.CodigoCasoPrueba
       })), { transaction: Transaccion });
     }
-    return await CasoPrueba.findOne({
+    const CasoCreado = await CasoPrueba.findOne({
       where: { [CodigoCasoPrueba]: Creado.CodigoCasoPrueba },
       include: [CrearIncluirPasosCasoPrueba()],
       transaction: Transaccion
     });
+    return NormalizarCasoPruebaParaRespuesta(CasoCreado);
   });
 };
 
@@ -560,11 +590,12 @@ const EditarCasoPrueba = async (Codigo, Datos, CodigoEmpresaSolicitado, DatosUsu
       }
     }
 
-    return await CasoPrueba.findOne({
+    const CasoActualizado = await CasoPrueba.findOne({
       where: { [CodigoCasoPrueba]: Codigo, [CodigoEmpresaModelo]: CodigoEmpresa },
       include: [CrearIncluirPasosCasoPrueba()],
       transaction: Transaccion
     });
+    return NormalizarCasoPruebaParaRespuesta(CasoActualizado);
   });
 };
 

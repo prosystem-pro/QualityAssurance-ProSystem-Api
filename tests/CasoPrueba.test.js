@@ -5,6 +5,7 @@ const Module = require('node:module');
 let casos = [];
 let pasos = [];
 let siguienteCodigo = 1;
+const aliasPasosGenerado = 'CasoPruebaPaso_CodigoCasoPrueba';
 
 const crearInstanciaCaso = (registro, transaccion) => ({
   ...registro,
@@ -44,7 +45,9 @@ const CasoPrueba = {
     );
     if (!registro) return null;
     const instancia = crearInstanciaCaso(registro, transaction);
-    if (include) instancia.Pasos = obtenerPasos(registro.CodigoCasoPrueba, transaction.pasos);
+    if (include) {
+      instancia[aliasPasosGenerado] = obtenerPasos(registro.CodigoCasoPrueba, transaction.pasos);
+    }
     return instancia;
   },
   async findAll({ where, include, transaction }) {
@@ -53,7 +56,9 @@ const CasoPrueba = {
       caso.CodigoEmpresa === where.CodigoEmpresa
     ).map((caso) => {
       const instancia = crearInstanciaCaso(caso, transaction);
-      if (include) instancia.Pasos = obtenerPasos(caso.CodigoCasoPrueba, pasos);
+      if (include) {
+        instancia[aliasPasosGenerado] = obtenerPasos(caso.CodigoCasoPrueba, pasos);
+      }
       return instancia;
     });
   }
@@ -72,6 +77,14 @@ const CasoPruebaPaso = {
     transaction.pasos = transaction.pasos.filter((paso) =>
       paso.CodigoCasoPrueba !== where.CodigoCasoPrueba
     );
+  }
+};
+CasoPrueba.associations = {
+  CasoPruebaPasos: {
+    target: CasoPruebaPaso,
+    as: aliasPasosGenerado,
+    associationType: 'HasMany',
+    foreignKey: 'CodigoCasoPrueba'
   }
 };
 
@@ -219,4 +232,20 @@ test('rechaza pasos inválidos antes de persistirlos', async () => {
     { statusCode: 400 }
   );
   assert.equal(casos.length, 0);
+});
+
+test('falla explícitamente si falta la relación generada desde la base de datos', async () => {
+  const asociacionesOriginales = CasoPrueba.associations;
+  CasoPrueba.associations = {};
+  try {
+    await assert.rejects(
+      servicio.ListadoCasoPrueba(7, admin),
+      {
+        statusCode: 500,
+        message: /Falta la relación de CasoPrueba con CasoPruebaPaso/
+      }
+    );
+  } finally {
+    CasoPrueba.associations = asociacionesOriginales;
+  }
 });
