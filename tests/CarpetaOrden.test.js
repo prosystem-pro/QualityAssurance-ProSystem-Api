@@ -5,6 +5,7 @@ const Module = require('node:module');
 let registros = [];
 let fallarActualizacion;
 let nivelAislamiento;
+let siguienteCodigoCarpeta = 1;
 
 const instancia = (registro) => ({
   ...registro,
@@ -36,12 +37,28 @@ const Carpeta = {
     return registro ? instancia(registro) : null;
   },
   async findAll({ where, transaction }) {
-    return transaction.registros
+    const origen = transaction ? transaction.registros : registros;
+    return origen
       .filter((actual) =>
         actual.CodigoEmpresa === where.CodigoEmpresa &&
-        actual.CodigoCarpetaPadre === where.CodigoCarpetaPadre
+        (where.CodigoCarpetaPadre === undefined ||
+          actual.CodigoCarpetaPadre === where.CodigoCarpetaPadre)
       )
       .map(instancia);
+  },
+  async max(campo, { where, transaction }) {
+    const hermanas = transaction.registros.filter((actual) =>
+      actual.CodigoEmpresa === where.CodigoEmpresa &&
+      actual.CodigoCarpetaPadre === where.CodigoCarpetaPadre
+    );
+    return hermanas.length
+      ? Math.max(...hermanas.map((actual) => actual[campo]))
+      : null;
+  },
+  async create(datos, { transaction }) {
+    const registro = { ...datos, CodigoCarpeta: siguienteCodigoCarpeta++ };
+    transaction.registros.push(registro);
+    return instancia(registro);
   }
 };
 
@@ -65,6 +82,7 @@ Module._load = cargarOriginal;
 const admin = { SuperAdmin: 1 };
 const carpeta = (codigo, padre, orden, empresa = 1, estatus = 1) => ({
   CodigoCarpeta: codigo,
+  CodigoExterno: `CRP-${codigo}`,
   CodigoEmpresa: empresa,
   CodigoCarpetaPadre: padre,
   NombreCarpeta: `Carpeta ${codigo}`,
@@ -135,4 +153,33 @@ test('conserva la edición normal sin enviar orden', async () => {
   const resultado = await servicio.EditarCarpeta(1, { NombreCarpeta: 'Nuevo nombre' }, 1, admin);
   assert.equal(resultado.NombreCarpeta, 'Nuevo nombre');
   assert.equal(resultado.Orden, 1);
+});
+
+test('genera CodigoExterno CRP desde el identity y no permite cambiarlo desde el cliente', async () => {
+  registros = [];
+  siguienteCodigoCarpeta = 1;
+
+  const creada = await servicio.CrearCarpeta({
+    NombreCarpeta: 'Carpeta nueva',
+    CodigoExterno: 'valor-del-front'
+  }, 1, admin);
+
+  assert.equal(creada.CodigoCarpeta, 1);
+  assert.equal(creada.CodigoExterno, 'CRP-1');
+
+  await servicio.EditarCarpeta(1, {
+    NombreCarpeta: 'Carpeta actualizada',
+    CodigoExterno: 'otro-valor-del-front'
+  }, 1, admin);
+  assert.equal(registros[0].CodigoExterno, 'CRP-1');
+});
+
+test('incluye CodigoExterno al listar y consultar carpetas', async () => {
+  registros = [carpeta(3, null, 1)];
+
+  const listado = await servicio.ListadoCarpeta(1, admin);
+  const consultada = await servicio.ObtenerCarpetaPorCodigo(3, 1, admin);
+
+  assert.equal(listado[0].CodigoExterno, 'CRP-3');
+  assert.equal(consultada.CodigoExterno, 'CRP-3');
 });

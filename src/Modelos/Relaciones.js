@@ -1,5 +1,5 @@
 // ARCHIVO GENERADO AUTOMÁTICAMENTE — No editar manualmente
-// Generado el: 2026-11-15T18:04:56.335Z
+// Generado el: 2026-11-16T02:26:49.603Z
 // Nombre configurado en .env: Relaciones.js
 
 const Path = require('path');
@@ -72,24 +72,6 @@ EstadoCaso.hasMany(CasoPrueba, {
   as: 'CasoPrueba_CodigoEstadoCaso'
 });
 
-Carpeta.belongsTo(Carpeta, {
-  foreignKey: 'CodigoCarpetaPadre',
-  as: 'Carpeta_CodigoCarpetaPadre'
-});
-Carpeta.hasMany(Carpeta, {
-  foreignKey: 'CodigoCarpetaPadre',
-  as: 'CarpetaHijas_CodigoCarpetaPadre'
-});
-
-CasoPrueba.belongsTo(Carpeta, {
-  foreignKey: 'CodigoCarpeta',
-  as: 'Carpeta_CodigoCarpeta'
-});
-Carpeta.hasMany(CasoPrueba, {
-  foreignKey: 'CodigoCarpeta',
-  as: 'CasoPrueba_CodigoCarpeta'
-});
-
 Usuario.belongsTo(Rol, {
   foreignKey: 'CodigoRol',
   as: 'Rol_CodigoRol'
@@ -153,15 +135,6 @@ Empresa.hasMany(Usuario, {
   as: 'Usuario_CodigoEmpresa'
 });
 
-Carpeta.belongsTo(Empresa, {
-  foreignKey: 'CodigoEmpresa',
-  as: 'Empresa_CodigoEmpresa'
-});
-Empresa.hasMany(Carpeta, {
-  foreignKey: 'CodigoEmpresa',
-  as: 'Carpeta_CodigoEmpresa'
-});
-
 CasoPrueba.belongsTo(Empresa, {
   foreignKey: 'CodigoEmpresa',
   as: 'Empresa_CodigoEmpresa'
@@ -171,6 +144,15 @@ Empresa.hasMany(CasoPrueba, {
   as: 'CasoPrueba_CodigoEmpresa'
 });
 
+Carpeta.belongsTo(Empresa, {
+  foreignKey: 'CodigoEmpresa',
+  as: 'Empresa_CodigoEmpresa'
+});
+Empresa.hasMany(Carpeta, {
+  foreignKey: 'CodigoEmpresa',
+  as: 'Carpeta_CodigoEmpresa'
+});
+
 Pagos.belongsTo(Empresa, {
   foreignKey: 'CodigoEmpresa',
   as: 'Empresa_CodigoEmpresa'
@@ -178,6 +160,24 @@ Pagos.belongsTo(Empresa, {
 Empresa.hasMany(Pagos, {
   foreignKey: 'CodigoEmpresa',
   as: 'Pagos_CodigoEmpresa'
+});
+
+Carpeta.belongsTo(Carpeta, {
+  foreignKey: 'CodigoCarpetaPadre',
+  as: 'Carpeta_CodigoCarpetaPadre'
+});
+Carpeta.hasMany(Carpeta, {
+  foreignKey: 'CodigoCarpetaPadre',
+  as: 'CarpetaHijas_CodigoCarpetaPadre'
+});
+
+CasoPrueba.belongsTo(Carpeta, {
+  foreignKey: 'CodigoCarpeta',
+  as: 'Carpeta_CodigoCarpeta'
+});
+Carpeta.hasMany(CasoPrueba, {
+  foreignKey: 'CodigoCarpeta',
+  as: 'CasoPrueba_CodigoCarpeta'
 });
 
 Empresa.belongsTo(TipoEmpresa, {

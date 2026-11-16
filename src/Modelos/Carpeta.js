@@ -13,7 +13,8 @@ module.exports = function(sequelize, DataTypes) {
       references: {
         model: 'Empresa',
         key: 'CodigoEmpresa'
-      }
+      },
+      unique: "Uq_QaCarpeta_CodigoEmpresa_CodigoExterno"
     },
     NombreCarpeta: {
       type: DataTypes.STRING(128),
@@ -36,6 +37,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       defaultValue: 1
     },
+    CodigoExterno: {
+      type: DataTypes.STRING(32),
+      allowNull: false,
+      unique: "Uq_QaCarpeta_CodigoEmpresa_CodigoExterno"
+    },
     Estatus: {
       type: DataTypes.TINYINT,
       allowNull: false,
@@ -57,6 +63,14 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "CodigoCarpeta" },
+        ]
+      },
+      {
+        name: "Uq_QaCarpeta_CodigoEmpresa_CodigoExterno",
+        unique: true,
+        fields: [
+          { name: "CodigoEmpresa" },
+          { name: "CodigoExterno" },
         ]
       },
     ]

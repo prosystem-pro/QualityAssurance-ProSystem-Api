@@ -11,6 +11,7 @@ const {
 } = require('../Modelos/Relaciones');
 const { LanzarError } = require('../Utilidades/ErrorServicios');
 const { Op, Transaction } = require('sequelize');
+const { randomBytes } = require('crypto');
 
 const CodigoModelo = 'CodigoTipoPrueba';
 const NombreModelo = 'NombreTipoPrueba';
@@ -23,6 +24,9 @@ const NombreCarpeta = 'NombreCarpeta';
 const CodigoCasoPrueba = 'CodigoCasoPrueba';
 const TituloCasoPrueba = 'Titulo';
 const CodigoEmpresaModelo = 'CodigoEmpresa';
+
+const GenerarCodigoExternoTemporal = () =>
+  `TMP-${randomBytes(12).toString('hex').toUpperCase()}`;
 
 const NormalizarPasosCasoPrueba = (Pasos) => {
   if (!Array.isArray(Pasos)) {
@@ -383,17 +387,24 @@ const CrearCarpeta = async (Datos, CodigoEmpresaSolicitado, DatosUsuario) => {
     });
     const Orden = Number(UltimoOrden ?? 0) + 1;
 
-    return await Carpeta.create({
+    const CarpetaCreada = await Carpeta.create({
       ...Datos,
       CodigoCarpetaPadre,
       CodigoEmpresa,
-      Orden
+      Orden,
+      CodigoExterno: GenerarCodigoExternoTemporal()
     }, { transaction: Transaccion });
+    await CarpetaCreada.update({
+      CodigoExterno: `CRP-${CarpetaCreada.CodigoCarpeta}`
+    }, { transaction: Transaccion });
+    return CarpetaCreada;
   });
 };
 
 const EditarCarpeta = async (Codigo, Datos, CodigoEmpresaSolicitado, DatosUsuario) => {
   const CodigoEmpresa = await ValidarAccesoEmpresa(CodigoEmpresaSolicitado, DatosUsuario);
+  const DatosActualizacion = { ...Datos };
+  delete DatosActualizacion.CodigoExterno;
   if (Datos.Orden !== undefined) {
     if (!Number.isInteger(Datos.Orden) || Datos.Orden < 1) {
       throw LanzarError('El orden debe ser un número entero mayor que cero.', 400);
@@ -448,7 +459,11 @@ const EditarCarpeta = async (Codigo, Datos, CodigoEmpresaSolicitado, DatosUsuari
         const CarpetaActual = Ordenadas[Indice];
         const Orden = Indice + 1;
         if (CarpetaActual === Movida) {
-          await CarpetaActual.update({ ...Datos, CodigoEmpresa, Orden }, { transaction: Transaccion });
+          await CarpetaActual.update({
+            ...DatosActualizacion,
+            CodigoEmpresa,
+            Orden
+          }, { transaction: Transaccion });
         } else if (CarpetaActual.Orden !== Orden) {
           await CarpetaActual.update({ Orden }, { transaction: Transaccion });
         }
@@ -464,7 +479,7 @@ const EditarCarpeta = async (Codigo, Datos, CodigoEmpresaSolicitado, DatosUsuari
   if (Datos.CodigoCarpetaPadre !== null && Datos.CodigoCarpetaPadre !== undefined) {
     await ValidarCarpetaDeEmpresa(Datos.CodigoCarpetaPadre, CodigoEmpresa);
   }
-  await Objeto.update({ ...Datos, CodigoEmpresa });
+  await Objeto.update({ ...DatosActualizacion, CodigoEmpresa });
   return Objeto;
 };
 
@@ -513,7 +528,13 @@ const CrearCasoPrueba = async (Datos, CodigoEmpresaSolicitado, DatosUsuario) => 
   const Pasos = TipoPlantilla === 1
     ? NormalizarPasosCasoPrueba(Datos.Pasos ?? [])
     : [];
-  const DatosCaso = { ...Datos, TipoPlantilla, CodigoEmpresa, CodigoUsuario };
+  const DatosCaso = {
+    ...Datos,
+    TipoPlantilla,
+    CodigoEmpresa,
+    CodigoUsuario,
+    CodigoExterno: GenerarCodigoExternoTemporal()
+  };
   delete DatosCaso.Pasos;
   DatosCaso.EscenarioBdd = TipoPlantilla === 1 ? null : (Datos.EscenarioBdd ?? null);
   if (Datos.EsAutomatizado !== undefined) {
@@ -526,6 +547,9 @@ const CrearCasoPrueba = async (Datos, CodigoEmpresaSolicitado, DatosUsuario) => 
 
   return await CasoPrueba.sequelize.transaction(async (Transaccion) => {
     const Creado = await CasoPrueba.create(DatosCaso, { transaction: Transaccion });
+    await Creado.update({
+      CodigoExterno: `CP-${Creado.CodigoCasoPrueba}`
+    }, { transaction: Transaccion });
     if (Pasos.length > 0) {
       await CasoPruebaPaso.bulkCreate(Pasos.map((Paso) => ({
         ...Paso,
@@ -566,6 +590,7 @@ const EditarCasoPrueba = async (Codigo, Datos, CodigoEmpresaSolicitado, DatosUsu
       CodigoUsuario: Objeto.CodigoUsuario
     };
     delete DatosActualizar.Pasos;
+    delete DatosActualizar.CodigoExterno;
     if (TipoPlantilla === 1) DatosActualizar.EscenarioBdd = null;
     if (Datos.EsAutomatizado !== undefined) {
       DatosActualizar.EsAutomatizado = Boolean(Datos.EsAutomatizado);

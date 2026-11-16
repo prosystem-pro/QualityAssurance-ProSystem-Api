@@ -35,7 +35,7 @@ const CasoPrueba = {
   async create(datos, { transaction }) {
     const registro = { ...datos, CodigoCasoPrueba: siguienteCodigo++ };
     transaction.casos.push(registro);
-    return registro;
+    return crearInstanciaCaso(registro, transaction);
   },
   async findOne({ where, include, transaction }) {
     const origen = transaction ? transaction.casos : casos;
@@ -46,7 +46,10 @@ const CasoPrueba = {
     if (!registro) return null;
     const instancia = crearInstanciaCaso(registro, transaction);
     if (include) {
-      instancia[aliasPasosGenerado] = obtenerPasos(registro.CodigoCasoPrueba, transaction.pasos);
+      instancia[aliasPasosGenerado] = obtenerPasos(
+        registro.CodigoCasoPrueba,
+        transaction ? transaction.pasos : pasos
+      );
     }
     return instancia;
   },
@@ -129,6 +132,7 @@ test('crea un caso tradicional con pasos ordenados y campos nuevos', async () =>
     TipoPlantilla: 1,
     EsAutomatizado: true,
     TiempoEstimadoMinutos: 12,
+    CodigoExterno: 'valor-del-front',
     EscenarioBdd: 'no aplica',
     Pasos: [
       { Orden: 2, Accion: 'Confirmar compra' },
@@ -138,6 +142,7 @@ test('crea un caso tradicional con pasos ordenados y campos nuevos', async () =>
 
   assert.equal(creado.CodigoEmpresa, 7);
   assert.equal(creado.CodigoUsuario, 44);
+  assert.equal(creado.CodigoExterno, 'CP-1');
   assert.equal(creado.TipoPlantilla, 1);
   assert.equal(creado.EscenarioBdd, null);
   assert.deepEqual(creado.Pasos.map(({ Orden, Accion }) => ({ Orden, Accion })), [
@@ -171,6 +176,7 @@ test('reemplaza todos los pasos en una actualización tradicional', async () => 
     CodigoEmpresa: 7,
     CodigoCarpeta: 2,
     CodigoUsuario: 44,
+    CodigoExterno: 'CP-1',
     TipoPlantilla: 1,
     Titulo: 'Caso existente'
   }];
@@ -183,12 +189,14 @@ test('reemplaza todos los pasos en una actualización tradicional', async () => 
   }];
 
   const actualizado = await servicio.EditarCasoPrueba(1, {
+    CodigoExterno: 'otro-valor-del-front',
     Pasos: [{ Accion: 'Paso actualizado', ResultadoEsperado: 'Correcto' }]
   }, 7, admin);
 
   assert.deepEqual(actualizado.Pasos.map(({ Orden, Accion }) => ({ Orden, Accion })), [
     { Orden: 1, Accion: 'Paso actualizado' }
   ]);
+  assert.equal(actualizado.CodigoExterno, 'CP-1');
   assert.equal(pasos.length, 1);
 });
 
@@ -248,4 +256,32 @@ test('falla explícitamente si falta la relación generada desde la base de dato
   } finally {
     CasoPrueba.associations = asociacionesOriginales;
   }
+});
+
+test('incluye CodigoExterno en listado y consulta de casos de prueba', async () => {
+  reiniciarDatos();
+  casos = [{
+    CodigoCasoPrueba: 1,
+    CodigoEmpresa: 7,
+    CodigoCarpeta: 2,
+    CodigoUsuario: 44,
+    CodigoExterno: 'CP-1',
+    TipoPlantilla: 1,
+    Titulo: 'Caso existente',
+    Estatus: 1
+  }];
+  pasos = [{
+    CodigoCasoPrueba: 1,
+    CodigoCasoPruebaPaso: 1,
+    Orden: 1,
+    Accion: 'Abrir página',
+    ResultadoEsperado: 'Página visible'
+  }];
+
+  const listado = await servicio.ListadoCasoPrueba(7, admin);
+  const consultado = await servicio.ObtenerCasoPruebaPorCodigo(1, 7, admin);
+
+  assert.equal(listado[0].CodigoExterno, 'CP-1');
+  assert.equal(consultado.CodigoExterno, 'CP-1');
+  assert.equal(consultado.Pasos[0].Accion, 'Abrir página');
 });
