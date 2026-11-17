@@ -4,8 +4,11 @@ const Module = require('node:module');
 
 let casos = [];
 let pasos = [];
+let usuarios = [];
 let siguienteCodigo = 1;
 const aliasPasosGenerado = 'CasoPruebaPaso_CodigoCasoPrueba';
+const aliasUsuarioGenerado = 'Usuario_CodigoUsuario';
+const Usuario = {};
 
 const crearInstanciaCaso = (registro, transaccion) => ({
   ...registro,
@@ -55,12 +58,22 @@ const CasoPrueba = {
   },
   async findAll({ where, include, transaction }) {
     const origen = transaction ? transaction.casos : casos;
+    const incluirUsuario = include && include.find((opcion) =>
+      opcion.association.target === Usuario
+    );
     return origen.filter((caso) =>
       caso.CodigoEmpresa === where.CodigoEmpresa
     ).map((caso) => {
       const instancia = crearInstanciaCaso(caso, transaction);
       if (include) {
         instancia[aliasPasosGenerado] = obtenerPasos(caso.CodigoCasoPrueba, pasos);
+      }
+      if (incluirUsuario) {
+        assert.deepEqual(incluirUsuario.attributes, ['NombreUsuario']);
+        const usuario = usuarios.find((actual) => actual.CodigoUsuario === caso.CodigoUsuario);
+        instancia[incluirUsuario.association.as] = usuario
+          ? { NombreUsuario: usuario.NombreUsuario }
+          : null;
       }
       return instancia;
     });
@@ -88,6 +101,12 @@ CasoPrueba.associations = {
     as: aliasPasosGenerado,
     associationType: 'HasMany',
     foreignKey: 'CodigoCasoPrueba'
+  },
+  Usuario: {
+    target: Usuario,
+    as: aliasUsuarioGenerado,
+    associationType: 'BelongsTo',
+    foreignKey: 'CodigoUsuario'
   }
 };
 
@@ -100,7 +119,7 @@ const relaciones = {
   Prioridad: {},
   EstadoCaso: {},
   UsuarioEmpresa: {},
-  Usuario: {}
+  Usuario
 };
 
 const cargarOriginal = Module._load;
@@ -118,6 +137,7 @@ const admin = { SuperAdmin: 1, CodigoUsuario: 44 };
 const reiniciarDatos = () => {
   casos = [];
   pasos = [];
+  usuarios = [];
   siguienteCodigo = 1;
 };
 
@@ -247,7 +267,7 @@ test('falla explícitamente si falta la relación generada desde la base de dato
   CasoPrueba.associations = {};
   try {
     await assert.rejects(
-      servicio.ListadoCasoPrueba(7, admin),
+      servicio.ObtenerCasoPruebaPorCodigo(1, 7, admin),
       {
         statusCode: 500,
         message: /Falta la relación de CasoPrueba con CasoPruebaPaso/
@@ -284,4 +304,50 @@ test('incluye CodigoExterno en listado y consulta de casos de prueba', async () 
   assert.equal(listado[0].CodigoExterno, 'CP-1');
   assert.equal(consultado.CodigoExterno, 'CP-1');
   assert.equal(consultado.Pasos[0].Accion, 'Abrir página');
+});
+
+test('el listado incluye NombreUsuario del creador sin exponer otros datos', async () => {
+  reiniciarDatos();
+  casos = [
+    { CodigoCasoPrueba: 1, CodigoEmpresa: 7, CodigoUsuario: 44, Titulo: 'Caso A' },
+    { CodigoCasoPrueba: 2, CodigoEmpresa: 7, CodigoUsuario: 45, Titulo: 'Caso B' }
+  ];
+  usuarios = [
+    { CodigoUsuario: 44, NombreUsuario: 'ana', ClaveHash: 'no-debe-mostrarse' },
+    { CodigoUsuario: 45, NombreUsuario: 'carlos', ClaveHash: 'no-debe-mostrarse' }
+  ];
+
+  const listado = await servicio.ListadoCasoPrueba(7, admin);
+
+  assert.deepEqual(listado.map(({ CodigoUsuario, NombreUsuario }) => ({
+    CodigoUsuario,
+    NombreUsuario
+  })), [
+    { CodigoUsuario: 44, NombreUsuario: 'ana' },
+    { CodigoUsuario: 45, NombreUsuario: 'carlos' }
+  ]);
+  assert.equal(listado[0][aliasUsuarioGenerado], undefined);
+  assert.equal(JSON.stringify(listado).includes('no-debe-mostrarse'), false);
+});
+
+test('el listado conserva el caso si el usuario relacionado no está disponible', async () => {
+  reiniciarDatos();
+  casos = [{ CodigoCasoPrueba: 1, CodigoEmpresa: 7, CodigoUsuario: 44, Titulo: 'Caso A' }];
+
+  const listado = await servicio.ListadoCasoPrueba(7, admin);
+  assert.equal(listado[0].CodigoUsuario, 44);
+  assert.equal(listado[0].NombreUsuario, null);
+});
+
+test('el listado falla explícitamente si falta la relación generada con Usuario', async () => {
+  const asociacionesOriginales = CasoPrueba.associations;
+  CasoPrueba.associations = { CasoPruebaPasos: asociacionesOriginales.CasoPruebaPasos };
+  try {
+    await assert.rejects(servicio.ListadoCasoPrueba(7, admin), {
+      statusCode: 500,
+      message: /Falta la relación generada de CasoPrueba con Usuario/
+    });
+  } finally {
+    CasoPrueba.associations = asociacionesOriginales;
+  }
 });

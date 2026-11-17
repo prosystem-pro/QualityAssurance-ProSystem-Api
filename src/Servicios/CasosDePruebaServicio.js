@@ -113,6 +113,22 @@ const CrearIncluirPasosCasoPrueba = () => ({
   order: [['Orden', 'ASC']]
 });
 
+const ObtenerAsociacionUsuarioCasoPrueba = () => {
+  const Asociacion = Object.values(CasoPrueba.associations || {}).find((Relacion) =>
+    Relacion.target === Usuario &&
+    Relacion.associationType === 'BelongsTo' &&
+    Relacion.foreignKey === 'CodigoUsuario'
+  );
+  if (!Asociacion) {
+    throw LanzarError(
+      'Falta la relación generada de CasoPrueba con Usuario. Verifique la clave foránea en la base de datos y regenere las relaciones.',
+      500,
+      'Configuracion'
+    );
+  }
+  return Asociacion;
+};
+
 const NormalizarCasoPruebaParaRespuesta = (Caso) => {
   if (!Caso) return Caso;
 
@@ -496,15 +512,25 @@ const EliminarCarpeta = async (Codigo, CodigoEmpresaSolicitado, DatosUsuario) =>
 // Operaciones de casos de prueba
 const ListadoCasoPrueba = async (CodigoEmpresaSolicitado, DatosUsuario) => {
   const CodigoEmpresa = await ValidarAccesoEmpresa(CodigoEmpresaSolicitado, DatosUsuario);
+  const AsociacionUsuario = ObtenerAsociacionUsuarioCasoPrueba();
   const Casos = await CasoPrueba.findAll({
     where: {
       [CodigoEmpresaModelo]: CodigoEmpresa,
       Estatus: { [Op.in]: [1, 2] }
     },
-    include: [CrearIncluirPasosCasoPrueba()],
+    include: [
+      CrearIncluirPasosCasoPrueba(),
+      { association: AsociacionUsuario, attributes: ['NombreUsuario'], required: false }
+    ],
     order: [[TituloCasoPrueba, 'ASC']]
   });
-  return Casos.map(NormalizarCasoPruebaParaRespuesta);
+  return Casos.map((Caso) => {
+    const DatosCaso = NormalizarCasoPruebaParaRespuesta(Caso);
+    const UsuarioCreador = DatosCaso[AsociacionUsuario.as];
+    DatosCaso.NombreUsuario = UsuarioCreador ? UsuarioCreador.NombreUsuario : null;
+    delete DatosCaso[AsociacionUsuario.as];
+    return DatosCaso;
+  });
 };
 
 const ObtenerCasoPruebaPorCodigo = async (Codigo, CodigoEmpresaSolicitado, DatosUsuario) => {
