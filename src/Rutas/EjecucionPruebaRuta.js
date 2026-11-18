@@ -9,6 +9,7 @@ const VerificarToken = require('../FuncionIntermedia/VerificarToken');
 const VerificarPermisos = require('../FuncionIntermedia/VerificarPermisos');
 const {
   ListadoResultadoEjecucion,
+  CrearEjecucionPruebaDetalleMultiple,
   ObtenerResultadoEjecucionPorCodigo,
   CrearResultadoEjecucion,
   EditarResultadoEjecucion,
@@ -39,6 +40,7 @@ Router.delete(`/${ModeloEjecucionPrueba}/eliminar/:Codigo`, VerificarToken, Veri
 
 // Rutas de EjecucionPruebaDetalle
 Router.post(`/${ModeloEjecucionPrueba}/:Codigo/detalles/crear`, VerificarToken, VerificarPermisos('CrearDetalleEjecucionPrueba', Tabla), CrearEjecucionPruebaDetalle);
+Router.post(`/${ModeloEjecucionPrueba}/:Codigo/detalles/crear-multiple`, VerificarToken, VerificarPermisos('CrearDetalleEjecucionPrueba', Tabla), CrearEjecucionPruebaDetalleMultiple);
 Router.put(`/${ModeloEjecucionPrueba}/:Codigo/detalles/:CodigoDetalle`, VerificarToken, VerificarPermisos('EditarDetalleEjecucionPrueba', Tabla), EditarEjecucionPruebaDetalle);
 Router.delete(`/${ModeloEjecucionPrueba}/:Codigo/detalles/:CodigoDetalle`, VerificarToken, VerificarPermisos('EliminarDetalleEjecucionPrueba', Tabla), EliminarEjecucionPruebaDetalle);
 

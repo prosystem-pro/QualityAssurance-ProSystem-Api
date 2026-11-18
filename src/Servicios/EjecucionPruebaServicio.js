@@ -5,6 +5,7 @@
   ResultadoEjecucion,
   CasoPrueba,
   CasoPruebaPaso,
+  Carpeta,
   Empresa,
   UsuarioEmpresa,
   Usuario
@@ -45,6 +46,9 @@ const AsociacionPasos = () => ObtenerAsociacion(
 const AsociacionCaso = () => ObtenerAsociacion(
   EjecucionPruebaDetalle, CasoPrueba, 'BelongsTo', 'CodigoCasoPrueba'
 );
+const AsociacionCarpetaCaso = () => ObtenerAsociacion(
+  CasoPrueba, Carpeta, 'BelongsTo', 'CodigoCarpeta'
+);
 const AsociacionResultadoDetalle = () => ObtenerAsociacion(
   EjecucionPruebaDetalle, ResultadoEjecucion, 'BelongsTo', 'CodigoResultado'
 );
@@ -64,8 +68,13 @@ const AsociacionUsuario = () => ObtenerAsociacion(
 const CrearIncludesDetalle = () => [
   {
     association: AsociacionCaso(),
-    attributes: ['CodigoCasoPrueba', 'CodigoExterno', 'Titulo'],
-    required: false
+    attributes: ['CodigoCasoPrueba', 'CodigoExterno', 'Titulo', 'CodigoCarpeta'],
+    required: false,
+    include: [{
+      association: AsociacionCarpetaCaso(),
+      attributes: ['CodigoCarpeta', 'NombreCarpeta', 'CodigoCarpetaPadre', 'CodigoExterno'],
+      required: false
+    }]
   },
   {
     association: AsociacionResultadoDetalle(),
@@ -213,6 +222,12 @@ const NormalizarDetalle = (Instancia) => {
   delete Detalle[Resultado.as];
   delete Detalle[UsuarioDetalle.as];
   delete Detalle[Pasos.as];
+  if (ClaveCaso) {
+    const CarpetaCaso = AsociacionCarpetaCaso();
+    const DatosCarpeta = ClaveCaso[CarpetaCaso.as];
+    delete ClaveCaso[CarpetaCaso.as];
+    ClaveCaso.Carpeta = DatosCarpeta || null;
+  }
   Detalle.CasoPrueba = ClaveCaso || null;
   Detalle.Resultado = ClaveResultado || null;
   Detalle.NombreUsuario = ClaveUsuario?.NombreUsuario ?? null;
@@ -700,7 +715,139 @@ const EliminarEjecucionPruebaDetalle = async (
   });
 };
 
+const ValidarListaCodigos = (Lista, Nombre) => {
+  if (Lista === undefined || Lista === null) return [];
+  if (!Array.isArray(Lista)) throw LanzarError(`${Nombre} debe ser una lista.`, 400);
+  return [...new Set(Lista.map((Codigo) => ValidarEntero(Codigo, Nombre)))];
+};
+
+const ObtenerCodigosCarpetaConSubcarpetas = async (CodigosCarpeta, CodigoEmpresa, Transaccion) => {
+  const Encontradas = await Carpeta.findAll({
+    where: {
+      CodigoCarpeta: { [Op.in]: CodigosCarpeta },
+      [CodigoEmpresaModelo]: CodigoEmpresa,
+      Estatus: EstatusVisibles
+    },
+    attributes: ['CodigoCarpeta'],
+    transaction: Transaccion
+  });
+  if (Encontradas.length !== CodigosCarpeta.length) {
+    throw LanzarError('Una o más carpetas no existen en la empresa seleccionada.', 404);
+  }
+
+  const Todas = new Set(CodigosCarpeta);
+  let Pendientes = [...CodigosCarpeta];
+  while (Pendientes.length > 0) {
+    const Hijas = await Carpeta.findAll({
+      where: {
+        CodigoCarpetaPadre: { [Op.in]: Pendientes },
+        [CodigoEmpresaModelo]: CodigoEmpresa,
+        Estatus: EstatusVisibles
+      },
+      attributes: ['CodigoCarpeta'],
+      transaction: Transaccion
+    });
+    Pendientes = Hijas
+      .map((Hija) => Hija.CodigoCarpeta)
+      .filter((Codigo) => !Todas.has(Codigo));
+    Pendientes.forEach((Codigo) => Todas.add(Codigo));
+  }
+  return [...Todas];
+};
+
+const CrearEjecucionPruebaDetalleMultiple = async (
+  Codigo, Datos, CodigoEmpresaSolicitado, DatosUsuario
+) => {
+  const CodigoEmpresa = await ValidarAccesoEmpresa(CodigoEmpresaSolicitado, DatosUsuario);
+  const CodigoEjecucionPrueba = ValidarEntero(Codigo, 'Codigo');
+  const CodigoUsuario = ObtenerCodigoUsuarioAutenticado(DatosUsuario);
+  const CodigosCarpeta = ValidarListaCodigos(Datos?.CodigosCarpeta, 'CodigosCarpeta');
+  const CodigosCasoIndividuales = ValidarListaCodigos(
+    Datos?.CodigosCasoPrueba, 'CodigosCasoPrueba'
+  );
+  if (CodigosCarpeta.length === 0 && CodigosCasoIndividuales.length === 0) {
+    throw LanzarError('Debe enviar CodigosCarpeta y/o CodigosCasoPrueba.', 400);
+  }
+  const IncluirSubcarpetas = Datos?.IncluirSubcarpetas !== false;
+
+  return EjecucionPrueba.sequelize.transaction(async (Transaccion) => {
+    await ValidarEjecucionEnProgreso(CodigoEjecucionPrueba, CodigoEmpresa, Transaccion);
+    const CodigoResultado = await ValidarResultado(
+      Datos.CodigoResultado ?? ResultadoNoEjecutado, Transaccion
+    );
+
+    const CodigosCasoTotales = new Set(CodigosCasoIndividuales);
+    if (CodigosCasoIndividuales.length > 0) {
+      const Individuales = await CasoPrueba.findAll({
+        where: {
+          CodigoCasoPrueba: { [Op.in]: CodigosCasoIndividuales },
+          [CodigoEmpresaModelo]: CodigoEmpresa,
+          Estatus: EstatusVisibles
+        },
+        attributes: ['CodigoCasoPrueba'],
+        transaction: Transaccion
+      });
+      if (Individuales.length !== CodigosCasoIndividuales.length) {
+        throw LanzarError('Uno o más casos de prueba no existen en la empresa seleccionada.', 404);
+      }
+    }
+    if (CodigosCarpeta.length > 0) {
+      const CarpetasObjetivo = IncluirSubcarpetas
+        ? await ObtenerCodigosCarpetaConSubcarpetas(CodigosCarpeta, CodigoEmpresa, Transaccion)
+        : CodigosCarpeta;
+      const CasosCarpeta = await CasoPrueba.findAll({
+        where: {
+          CodigoCarpeta: { [Op.in]: CarpetasObjetivo },
+          [CodigoEmpresaModelo]: CodigoEmpresa,
+          Estatus: EstatusVisibles
+        },
+        attributes: ['CodigoCasoPrueba'],
+        transaction: Transaccion
+      });
+      CasosCarpeta.forEach((Caso) => CodigosCasoTotales.add(Caso.CodigoCasoPrueba));
+    }
+
+    const CodigosSolicitados = [...CodigosCasoTotales];
+    const Existentes = CodigosSolicitados.length === 0 ? [] : await EjecucionPruebaDetalle.findAll({
+      where: {
+        CodigoEjecucionPrueba,
+        CodigoCasoPrueba: { [Op.in]: CodigosSolicitados },
+        Estatus: 1
+      },
+      attributes: ['CodigoCasoPrueba'],
+      transaction: Transaccion
+    });
+    const YaAgregados = new Set(Existentes.map((Detalle) => Detalle.CodigoCasoPrueba));
+    const CodigosNuevos = CodigosSolicitados.filter((Caso) => !YaAgregados.has(Caso));
+
+    if (CodigosNuevos.length > 0) {
+      await EjecucionPruebaDetalle.bulkCreate(CodigosNuevos.map((CodigoCasoPrueba) => ({
+        CodigoEjecucionPrueba,
+        CodigoCasoPrueba,
+        CodigoResultado,
+        CodigoUsuario
+      })), { transaction: Transaccion });
+    }
+    const Creados = CodigosNuevos.length === 0 ? [] : await EjecucionPruebaDetalle.findAll({
+      where: {
+        CodigoEjecucionPrueba,
+        CodigoCasoPrueba: { [Op.in]: CodigosNuevos },
+        Estatus: 1
+      },
+      include: CrearIncludesDetalle(),
+      transaction: Transaccion
+    });
+    return {
+      TotalCreados: Creados.length,
+      TotalOmitidos: YaAgregados.size,
+      CodigosCasoOmitidos: [...YaAgregados],
+      Creados: Creados.map(NormalizarDetalle)
+    };
+  });
+};
+
 module.exports = {
+  CrearEjecucionPruebaDetalleMultiple,
   ListadoResultadoEjecucion,
   ObtenerResultadoEjecucionPorCodigo,
   CrearResultadoEjecucion,

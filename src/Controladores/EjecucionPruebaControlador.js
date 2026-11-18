@@ -112,6 +112,18 @@ const CrearEjecucionPruebaDetalle = async (req, res) => {
   }
 };
 
+const CrearEjecucionPruebaDetalleMultiple = async (req, res) => {
+  try {
+    const { Codigo } = req.params;
+    const Creado = await Servicio.CrearEjecucionPruebaDetalleMultiple(
+      Codigo, req.body, req.query.CodigoEmpresa, req.Datos
+    );
+    return ResponderExito(res, 'Se guardaron los casos en la ejecución exitosamente.', Creado, 201);
+  } catch (error) {
+    return ManejarError(error, res, 'Error al agregar los casos a la ejecución');
+  }
+};
+
 const EditarEjecucionPruebaDetalle = async (req, res) => {
   try {
     const { Codigo, CodigoDetalle } = req.params;
@@ -137,6 +149,7 @@ const EliminarEjecucionPruebaDetalle = async (req, res) => {
 };
 
 module.exports = {
+  CrearEjecucionPruebaDetalleMultiple,
   ListadoResultadoEjecucion,
   ObtenerResultadoEjecucionPorCodigo,
   CrearResultadoEjecucion,

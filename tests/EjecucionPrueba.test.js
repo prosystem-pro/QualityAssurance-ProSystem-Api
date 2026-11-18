@@ -1,4 +1,4 @@
-const test = require('node:test');
+﻿const test = require('node:test');
 const assert = require('node:assert/strict');
 const Module = require('node:module');
 
@@ -9,6 +9,7 @@ const EjecucionPruebaPaso = CrearModelo('EjecucionPruebaPaso');
 const ResultadoEjecucion = CrearModelo('ResultadoEjecucion');
 const CasoPrueba = CrearModelo('CasoPrueba');
 const CasoPruebaPaso = CrearModelo('CasoPruebaPaso');
+const Carpeta = CrearModelo('Carpeta');
 const Empresa = CrearModelo('Empresa');
 const UsuarioEmpresa = CrearModelo('UsuarioEmpresa');
 const Usuario = CrearModelo('Usuario');
@@ -37,6 +38,8 @@ Asociar(EjecucionPruebaPaso, ResultadoEjecucion, 'BelongsTo',
   'CodigoResultado', 'ResultadoEjecucion_CodigoResultado');
 Asociar(EjecucionPruebaPaso, CasoPruebaPaso, 'BelongsTo',
   'CodigoCasoPruebaPaso', 'CasoPruebaPaso_CodigoCasoPruebaPaso');
+Asociar(CasoPrueba, Carpeta, 'BelongsTo',
+  'CodigoCarpeta', 'Carpeta_CodigoCarpeta');
 Asociar(EjecucionPrueba, Usuario, 'BelongsTo',
   'CodigoUsuario', 'Usuario_CodigoUsuario');
 
@@ -150,6 +153,7 @@ const relaciones = {
   ResultadoEjecucion,
   CasoPrueba,
   CasoPruebaPaso,
+  Carpeta,
   Empresa,
   UsuarioEmpresa,
   Usuario
@@ -307,5 +311,66 @@ test('administra el catálogo de resultados con nombre único y sin enviar estat
   } finally {
     ResultadoEjecucion.findOne = findOneOriginal;
     ResultadoEjecucion.create = createOriginal;
+  }
+});
+
+test('agrega en bloque los casos de una carpeta con subcarpetas y casos sueltos, omitiendo repetidos', async () => {
+  reiniciarDatos();
+  const originales = {
+    ejecucionFindOne: EjecucionPrueba.findOne,
+    casoFindAll: CasoPrueba.findAll,
+    carpetaFindAll: Carpeta.findAll,
+    detalleFindAll: EjecucionPruebaDetalle.findAll,
+    detalleBulkCreate: EjecucionPruebaDetalle.bulkCreate
+  };
+  const { Op } = require('sequelize');
+  const carpetas = [
+    { CodigoCarpeta: 1, CodigoCarpetaPadre: null },
+    { CodigoCarpeta: 2, CodigoCarpetaPadre: 1 },
+    { CodigoCarpeta: 3, CodigoCarpetaPadre: null }
+  ];
+  const casosBd = [
+    { CodigoCasoPrueba: 10, CodigoCarpeta: 1 },
+    { CodigoCasoPrueba: 11, CodigoCarpeta: 2 },
+    { CodigoCasoPrueba: 12, CodigoCarpeta: 3 },
+    { CodigoCasoPrueba: 13, CodigoCarpeta: 3 }
+  ];
+  let detallesBd = [{ CodigoEjecucionPrueba: 100, CodigoCasoPrueba: 10, Estatus: 1 }];
+  const CarpetaFiltro = (where, campo) => carpetas.filter((c) =>
+    where[campo][Op.in].includes(c[campo]));
+  Carpeta.findAll = async ({ where }) => where.CodigoCarpeta
+    ? CarpetaFiltro(where, 'CodigoCarpeta')
+    : CarpetaFiltro(where, 'CodigoCarpetaPadre');
+  CasoPrueba.findAll = async ({ where }) => casosBd.filter((c) =>
+    where.CodigoCasoPrueba
+      ? where.CodigoCasoPrueba[Op.in].includes(c.CodigoCasoPrueba)
+      : where.CodigoCarpeta[Op.in].includes(c.CodigoCarpeta));
+  EjecucionPrueba.findOne = async () => ({ CodigoEjecucionPrueba: 100, CodigoEstadoEjecucion: 1 });
+  EjecucionPruebaDetalle.findAll = async ({ where }) => detallesBd
+    .filter((d) => where.CodigoCasoPrueba[Op.in].includes(d.CodigoCasoPrueba))
+    .map((d) => ConvertirAInstancia({
+      ...d,
+      CasoPrueba_CodigoCasoPrueba: { CodigoCasoPrueba: d.CodigoCasoPrueba, Carpeta_CodigoCarpeta: { CodigoCarpeta: 1 } }
+    }));
+  EjecucionPruebaDetalle.bulkCreate = async (datos) => { detallesBd = [...detallesBd, ...datos.map((d) => ({ ...d, Estatus: 1 }))]; };
+  try {
+    const respuesta = await servicio.CrearEjecucionPruebaDetalleMultiple(100, {
+      CodigosCarpeta: [1],
+      CodigosCasoPrueba: [12],
+      CodigoResultado: 1
+    }, 7, admin);
+    assert.equal(respuesta.TotalCreados, 2);
+    assert.deepEqual(respuesta.CodigosCasoOmitidos, [10]);
+    assert.deepEqual(detallesBd.map((d) => d.CodigoCasoPrueba).sort(), [10, 11, 12]);
+    assert.ok(detallesBd.every((d) => d.CodigoUsuario === undefined || d.CodigoUsuario === 44));
+    assert.equal(respuesta.Creados[0].CasoPrueba.Carpeta.CodigoCarpeta, 1);
+    await assert.rejects(servicio.CrearEjecucionPruebaDetalleMultiple(100, {}, 7, admin), { statusCode: 400 });
+    await assert.rejects(servicio.CrearEjecucionPruebaDetalleMultiple(100, { CodigosCarpeta: [1, 99], CodigoResultado: 1 }, 7, admin), { statusCode: 404 });
+  } finally {
+    EjecucionPrueba.findOne = originales.ejecucionFindOne;
+    CasoPrueba.findAll = originales.casoFindAll;
+    Carpeta.findAll = originales.carpetaFindAll;
+    EjecucionPruebaDetalle.findAll = originales.detalleFindAll;
+    EjecucionPruebaDetalle.bulkCreate = originales.detalleBulkCreate;
   }
 });
