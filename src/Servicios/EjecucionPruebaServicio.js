@@ -1,4 +1,4 @@
-const {
+﻿const {
   EjecucionPrueba,
   EjecucionPruebaDetalle,
   EjecucionPruebaPaso,
@@ -11,9 +11,14 @@ const {
 } = require('../Modelos/Relaciones');
 const { LanzarError } = require('../Utilidades/ErrorServicios');
 const { Op } = require('sequelize');
+const { randomBytes } = require('crypto');
 
 const CodigoEmpresaModelo = 'CodigoEmpresa';
+const ResultadoNoEjecutado = 4;
 const EstatusVisibles = { [Op.in]: [1, 2] };
+
+const GenerarCodigoExternoTemporal = () =>
+  `TMP-${randomBytes(12).toString('hex').toUpperCase()}`;
 
 const ObtenerAsociacion = (Modelo, Destino, Tipo, LlaveForanea) => {
   const Asociacion = Object.values(Modelo.associations || {}).find((Relacion) =>
@@ -74,8 +79,9 @@ const CrearIncludesDetalle = () => [
   },
   {
     association: AsociacionPasos(),
-    required: false,
+    separate: true,
     where: { Estatus: 1 },
+    order: [['Orden', 'ASC']],
     include: [
       {
         association: AsociacionCasoPaso(),
@@ -179,7 +185,7 @@ const CrearIncludesEjecucion = () => {
     },
     {
       association: AsociacionDetalle,
-      required: false,
+      separate: true,
       where: { Estatus: 1 },
       include: CrearIncludesDetalle()
     }
@@ -260,6 +266,84 @@ const ListadoResultadoEjecucion = async (CodigoEmpresaSolicitado, DatosUsuario) 
   });
 };
 
+const ObtenerResultadoEjecucionPorCodigo = async (Codigo, CodigoEmpresaSolicitado, DatosUsuario) => {
+  await ValidarAccesoEmpresa(CodigoEmpresaSolicitado, DatosUsuario);
+  const Resultado = await ResultadoEjecucion.findOne({
+    where: { CodigoResultado: ValidarEntero(Codigo, 'Codigo') }
+  });
+  if (!Resultado) throw LanzarError('Resultado de ejecución no encontrado.', 404);
+  return Resultado;
+};
+
+const PrepararDatosResultado = (Datos, EsCreacion) => {
+  const DatosValidos = {};
+  if (EsCreacion || Datos.Nombre !== undefined) {
+    if (typeof Datos.Nombre !== 'string' || Datos.Nombre.trim().length === 0 ||
+        Datos.Nombre.trim().length > 32) {
+      throw LanzarError('El nombre del resultado es obligatorio (máximo 32 caracteres).', 400);
+    }
+    DatosValidos.Nombre = Datos.Nombre.trim();
+  }
+  if (Datos.Descripcion !== undefined) {
+    ValidarTextoOpcional(Datos.Descripcion, 'Descripcion');
+    if (Datos.Descripcion && Datos.Descripcion.length > 256) {
+      throw LanzarError('La descripción no puede superar 256 caracteres.', 400);
+    }
+    DatosValidos.Descripcion = Datos.Descripcion;
+  }
+  if (Datos.Estatus !== undefined) {
+    if (![0, 1].includes(Number(Datos.Estatus))) {
+      throw LanzarError('Estatus debe ser 1 (activo) o 0 (inactivo).', 400);
+    }
+    DatosValidos.Estatus = Number(Datos.Estatus);
+  }
+  return DatosValidos;
+};
+
+const GuardarResultado = async (Accion) => {
+  try {
+    return await Accion();
+  } catch (error) {
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      throw LanzarError('Ya existe un resultado con ese nombre.', 409);
+    }
+    throw error;
+  }
+};
+
+const CrearResultadoEjecucion = async (Datos, CodigoEmpresaSolicitado, DatosUsuario) => {
+  await ValidarAccesoEmpresa(CodigoEmpresaSolicitado, DatosUsuario);
+  const DatosCrear = PrepararDatosResultado(Datos || {}, true);
+  return GuardarResultado(() => ResultadoEjecucion.create(DatosCrear));
+};
+
+const EditarResultadoEjecucion = async (Codigo, Datos, CodigoEmpresaSolicitado, DatosUsuario) => {
+  const Resultado = await ObtenerResultadoEjecucionPorCodigo(
+    Codigo, CodigoEmpresaSolicitado, DatosUsuario
+  );
+  const DatosActualizar = PrepararDatosResultado(Datos || {}, false);
+  await GuardarResultado(() => Resultado.update(DatosActualizar));
+  return Resultado;
+};
+
+const EliminarResultadoEjecucion = async (Codigo, CodigoEmpresaSolicitado, DatosUsuario) => {
+  const Resultado = await ObtenerResultadoEjecucionPorCodigo(
+    Codigo, CodigoEmpresaSolicitado, DatosUsuario
+  );
+  try {
+    await Resultado.destroy();
+  } catch (error) {
+    if (error.name === 'SequelizeForeignKeyConstraintError') {
+      throw LanzarError(
+        'No se puede eliminar el resultado porque ya está siendo usado en ejecuciones.',
+        409
+      );
+    }
+    throw error;
+  }
+  return Resultado;
+};
+
 const ListadoEjecucionPrueba = async (CodigoEmpresaSolicitado, DatosUsuario) => {
   const CodigoEmpresa = await ValidarAccesoEmpresa(CodigoEmpresaSolicitado, DatosUsuario);
   const Ejecuciones = await EjecucionPrueba.findAll({
@@ -282,19 +366,19 @@ const CrearEjecucionPrueba = async (Datos, CodigoEmpresaSolicitado, DatosUsuario
   const CodigoEmpresa = await ValidarAccesoEmpresa(CodigoEmpresaSolicitado, DatosUsuario);
   const CodigoUsuario = ObtenerCodigoUsuarioAutenticado(DatosUsuario);
   if (typeof Datos.NombreEjecucionPrueba !== 'string' ||
-      Datos.NombreEjecucionPrueba.trim().length === 0) {
+    Datos.NombreEjecucionPrueba.trim().length === 0) {
     throw LanzarError('El nombre de la ejecución es obligatorio.', 400);
   }
   ValidarTextoOpcional(Datos.Descripcion, 'Descripcion');
   ValidarTextoOpcional(Datos.ObservacionesGenerales, 'ObservacionesGenerales');
-  ValidarTextoOpcional(Datos.CodigoExterno, 'CodigoExterno');
 
   const DatosCrear = {
     CodigoEmpresa,
     CodigoUsuario,
-    NombreEjecucionPrueba: Datos.NombreEjecucionPrueba.trim()
+    NombreEjecucionPrueba: Datos.NombreEjecucionPrueba.trim(),
+    CodigoExterno: GenerarCodigoExternoTemporal()
   };
-  for (const Campo of ['Descripcion', 'ObservacionesGenerales', 'CodigoExterno']) {
+  for (const Campo of ['Descripcion', 'ObservacionesGenerales']) {
     if (Datos[Campo] !== undefined) DatosCrear[Campo] = Datos[Campo];
   }
   if (Datos.CodigoEstadoEjecucion !== undefined) {
@@ -308,7 +392,13 @@ const CrearEjecucionPrueba = async (Datos, CodigoEmpresaSolicitado, DatosUsuario
 
   const FechaEjecucion = ObtenerFecha(Datos.FechaEjecucion, 'FechaEjecucion');
   if (FechaEjecucion !== undefined) DatosCrear.FechaEjecucion = FechaEjecucion;
-  const Creada = await EjecucionPrueba.create(DatosCrear);
+  const Creada = await EjecucionPrueba.sequelize.transaction(async (Transaccion) => {
+    const Nueva = await EjecucionPrueba.create(DatosCrear, { transaction: Transaccion });
+    await Nueva.update({
+      CodigoExterno: `EJP-${Nueva.CodigoEjecucionPrueba}`
+    }, { transaction: Transaccion });
+    return Nueva;
+  });
   return ObtenerEjecucion(Creada.CodigoEjecucionPrueba, CodigoEmpresa);
 };
 
@@ -325,12 +415,12 @@ const EditarEjecucionPrueba = async (
   const DatosActualizar = {};
   if (Datos.NombreEjecucionPrueba !== undefined) {
     if (typeof Datos.NombreEjecucionPrueba !== 'string' ||
-        Datos.NombreEjecucionPrueba.trim().length === 0) {
+      Datos.NombreEjecucionPrueba.trim().length === 0) {
       throw LanzarError('El nombre de la ejecución es obligatorio.', 400);
     }
     DatosActualizar.NombreEjecucionPrueba = Datos.NombreEjecucionPrueba.trim();
   }
-  for (const Campo of ['Descripcion', 'ObservacionesGenerales', 'CodigoExterno']) {
+  for (const Campo of ['Descripcion', 'ObservacionesGenerales']) {
     if (Datos[Campo] !== undefined) {
       ValidarTextoOpcional(Datos[Campo], Campo);
       DatosActualizar[Campo] = Datos[Campo];
@@ -348,8 +438,7 @@ const EditarEjecucionPrueba = async (
   }
   const FechaEjecucion = ObtenerFecha(Datos.FechaEjecucion, 'FechaEjecucion');
   if (FechaEjecucion !== undefined) DatosActualizar.FechaEjecucion = FechaEjecucion;
-  DatosActualizar.FechaUltimaModificacion = new Date();
-  await Ejecucion.update(DatosActualizar);
+  await Ejecucion.update({ ...DatosActualizar, FechaUltimaModificacion: new Date() });
   return ObtenerEjecucion(Codigo, CodigoEmpresa);
 };
 
@@ -487,7 +576,9 @@ const CrearEjecucionPruebaDetalle = async (
     if (Existente) {
       throw LanzarError('Este caso de prueba ya está agregado a la ejecución.', 409);
     }
-    const CodigoResultado = await ValidarResultado(Datos.CodigoResultado, Transaccion);
+    const CodigoResultado = await ValidarResultado(
+      Datos.CodigoResultado ?? ResultadoNoEjecutado, Transaccion
+    );
     const TiempoEjecucionSegundos = ValidarDatosDetalle(Datos);
     const Pasos = await NormalizarPasosEjecucion(Datos.Pasos, CodigoCasoPrueba, Transaccion);
     const Detalle = await EjecucionPruebaDetalle.create({
@@ -540,7 +631,7 @@ const EditarEjecucionPruebaDetalle = async (
     });
     if (!Detalle) throw LanzarError('El detalle no pertenece a esta ejecución.', 404);
 
-    const DatosActualizar = { CodigoUsuario };
+    const DatosActualizar = { CodigoUsuario, FechaUltimaModificacion: new Date() };
     if (Datos.CodigoResultado !== undefined) {
       DatosActualizar.CodigoResultado = await ValidarResultado(
         Datos.CodigoResultado, Transaccion
@@ -564,7 +655,6 @@ const EditarEjecucionPruebaDetalle = async (
           ? null
           : ValidarEntero(Datos.TiempoEjecucionSegundos, 'TiempoEjecucionSegundos', 0);
     }
-    DatosActualizar.FechaUltimaModificacion = new Date();
     await Detalle.update(DatosActualizar, { transaction: Transaccion });
 
     if (Object.prototype.hasOwnProperty.call(Datos, 'Pasos')) {
@@ -612,6 +702,10 @@ const EliminarEjecucionPruebaDetalle = async (
 
 module.exports = {
   ListadoResultadoEjecucion,
+  ObtenerResultadoEjecucionPorCodigo,
+  CrearResultadoEjecucion,
+  EditarResultadoEjecucion,
+  EliminarResultadoEjecucion,
   ListadoEjecucionPrueba,
   ObtenerEjecucionPruebaPorCodigo,
   CrearEjecucionPrueba,

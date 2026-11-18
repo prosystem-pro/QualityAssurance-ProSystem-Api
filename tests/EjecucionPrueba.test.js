@@ -198,9 +198,11 @@ test('crea encabezado con empresa y usuario autenticado, no con los valores del 
     CodigoEmpresa: 999,
     CodigoUsuario: 999,
     NombreEjecucionPrueba: 'Release 1.5',
-    CodigoEstadoEjecucion: 2
+    CodigoEstadoEjecucion: 2,
+    CodigoExterno: 'EXTERNO-CLIENTE'
   }, 7, admin);
 
+  assert.equal(ejecucion.CodigoExterno, 'EJP-100');
   assert.equal(ejecucion.CodigoEmpresa, 7);
   assert.equal(ejecucion.CodigoUsuario, 44);
   assert.equal(ejecucion.CodigoEstadoEjecucion, 2);
@@ -273,4 +275,37 @@ test('registra resultado del caso y pasos originales sin aceptar un paso de otro
       CodigoResultado: 1
     }]
   }, 7, admin), { statusCode: 400 });
+});
+
+test('administra el catálogo de resultados con nombre único y sin enviar estatus inválido', async () => {
+  reiniciarDatos();
+  const findOneOriginal = ResultadoEjecucion.findOne;
+  const createOriginal = ResultadoEjecucion.create;
+  ResultadoEjecucion.findOne = async ({ where }) => {
+    const encontrado = resultados.find((r) => r.CodigoResultado === where.CodigoResultado);
+    return encontrado ? ConvertirAInstancia(encontrado) : null;
+  };
+  ResultadoEjecucion.create = async (datos) => {
+    if (resultados.some((r) => r.Nombre === datos.Nombre)) {
+      const error = new Error('duplicado');
+      error.name = 'SequelizeUniqueConstraintError';
+      throw error;
+    }
+    const nuevo = { CodigoResultado: 10, Estatus: 1, ...datos };
+    resultados.push(nuevo);
+    return ConvertirAInstancia(nuevo);
+  };
+  try {
+    const creado = await servicio.CrearResultadoEjecucion({ Nombre: '  OMITIDO  ' }, 7, admin);
+    assert.equal(creado.Nombre, 'OMITIDO');
+    await assert.rejects(servicio.CrearResultadoEjecucion({ Nombre: 'PASA' }, 7, admin), { statusCode: 409 });
+    await assert.rejects(servicio.CrearResultadoEjecucion({}, 7, admin), { statusCode: 400 });
+    await assert.rejects(servicio.EditarResultadoEjecucion(10, { Estatus: 5 }, 7, admin), { statusCode: 400 });
+    const editado = await servicio.EditarResultadoEjecucion(10, { Estatus: 0 }, 7, admin);
+    assert.equal(editado.Estatus, 0);
+    await assert.rejects(servicio.EliminarResultadoEjecucion(999, 7, admin), { statusCode: 404 });
+  } finally {
+    ResultadoEjecucion.findOne = findOneOriginal;
+    ResultadoEjecucion.create = createOriginal;
+  }
 });

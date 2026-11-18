@@ -11,6 +11,45 @@ const ListadoResultadoEjecucion = async (req, res) => {
   }
 };
 
+const ObtenerResultadoEjecucionPorCodigo = async (req, res) => {
+  try {
+    const { Codigo } = req.params;
+    const Objeto = await Servicio.ObtenerResultadoEjecucionPorCodigo(Codigo, req.query.CodigoEmpresa, req.Datos);
+    return ResponderExito(res, 'Registro obtenido correctamente.', Objeto);
+  } catch (error) {
+    return ManejarError(error, res, 'Error al obtener el resultado de ejecución');
+  }
+};
+
+const CrearResultadoEjecucion = async (req, res) => {
+  try {
+    const Creado = await Servicio.CrearResultadoEjecucion(req.body, req.query.CodigoEmpresa, req.Datos);
+    return ResponderExito(res, 'Se guardó el registro exitosamente.', Creado, 201);
+  } catch (error) {
+    return ManejarError(error, res, 'Error al crear el resultado de ejecución');
+  }
+};
+
+const EditarResultadoEjecucion = async (req, res) => {
+  try {
+    const { Codigo } = req.params;
+    const Actualizado = await Servicio.EditarResultadoEjecucion(Codigo, req.body, req.query.CodigoEmpresa, req.Datos);
+    return ResponderExito(res, 'Se actualizó el registro exitosamente.', Actualizado);
+  } catch (error) {
+    return ManejarError(error, res, 'Error al actualizar el resultado de ejecución');
+  }
+};
+
+const EliminarResultadoEjecucion = async (req, res) => {
+  try {
+    const { Codigo } = req.params;
+    const Eliminado = await Servicio.EliminarResultadoEjecucion(Codigo, req.query.CodigoEmpresa, req.Datos);
+    return ResponderExito(res, 'Registro eliminado exitosamente.', Eliminado);
+  } catch (error) {
+    return ManejarError(error, res, 'Error al eliminar el resultado de ejecución');
+  }
+};
+
 const ListadoEjecucionPrueba = async (req, res) => {
   try {
     const Objeto = await Servicio.ListadoEjecucionPrueba(req.query.CodigoEmpresa, req.Datos);
@@ -99,6 +138,10 @@ const EliminarEjecucionPruebaDetalle = async (req, res) => {
 
 module.exports = {
   ListadoResultadoEjecucion,
+  ObtenerResultadoEjecucionPorCodigo,
+  CrearResultadoEjecucion,
+  EditarResultadoEjecucion,
+  EliminarResultadoEjecucion,
   ListadoEjecucionPrueba,
   ObtenerEjecucionPruebaPorCodigo,
   CrearEjecucionPrueba,
