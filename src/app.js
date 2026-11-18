@@ -19,6 +19,7 @@ const PermisosTablasDisponiblesRuta = require("./Rutas/PermisosTablasDisponibles
 const GenerarModelosTypescriptRuta = require("./Rutas/GenerarModelosTypescriptRuta");
 const LoginRuta = require("./Rutas/LoginRuta");
 const CasosDePruebaRuta = require("./Rutas/CasosDePruebaRuta");
+const EjecucionPruebaRuta = require("./Rutas/EjecucionPruebaRuta");
 
 App.use(Express.text({ type: 'text/plain' }));
 App.use(ConfiguracionCors());
@@ -38,5 +39,6 @@ App.use(`/${Ruter}`, PermisosTablasDisponiblesRuta);
 App.use(`/${Ruter}`, GenerarModelosTypescriptRuta);
 App.use(`/${Ruter}`, LoginRuta);
 App.use(`/${Ruter}`, CasosDePruebaRuta);
+App.use(`/${Ruter}`, EjecucionPruebaRuta);
 
 module.exports = App;
