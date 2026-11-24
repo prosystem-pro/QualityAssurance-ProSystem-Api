@@ -8,7 +8,6 @@ const { ConfiguracionCors } = require('./FuncionIntermedia/Cors');
 
 const RolRuta = require("./Rutas/RolRuta");
 const EmpresaRuta = require("./Rutas/EmpresaRuta");
-const TipoEmpresaRuta = require("./Rutas/TipoEmpresaRuta");
 const UsuarioEmpresaRuta = require("./Rutas/UsuarioEmpresaRuta");
 const DashboardRuta = require("./Rutas/DashboardRuta");
 const PermisoRolRecursoRuta = require("./Rutas/PermisoRolRecursoRuta");
@@ -28,7 +27,6 @@ App.use(CuerpoUrlCodificado);
 
 App.use(`/${Ruter}`, RolRuta);
 App.use(`/${Ruter}`, EmpresaRuta);
-App.use(`/${Ruter}`, TipoEmpresaRuta);
 App.use(`/${Ruter}`, UsuarioEmpresaRuta);
 App.use(`/${Ruter}`, DashboardRuta);
 App.use(`/${Ruter}`, PermisoRolRecursoRuta);

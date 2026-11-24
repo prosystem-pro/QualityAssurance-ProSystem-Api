@@ -1,6 +1,5 @@
 const {
   Empresa,
-  TipoEmpresa,
   Usuario,
   UsuarioEmpresa
 } = require('../Modelos/Relaciones');
@@ -9,7 +8,6 @@ const { Op } = require('sequelize');
 
 const AtributosEmpresa = [
   'CodigoEmpresa',
-  'CodigoTipoEmpresa',
   'NombreEmpresa',
   'RazonSocial',
   'NIT',
@@ -24,18 +22,11 @@ const AtributosEmpresa = [
   'Estatus'
 ];
 
-const CrearIncluirTipoEmpresa = () => ({
-  model: TipoEmpresa,
-  as: 'TipoEmpresa_CodigoTipoEmpresa',
-  attributes: ['CodigoTipoEmpresa', 'NombreTipoEmpresa']
-});
-
 const ObtenerEmpresas = async ({ CodigoUsuario, SuperAdmin }) => {
   if (SuperAdmin === 1) {
     const Empresas = await Empresa.findAll({
       attributes: AtributosEmpresa,
       where: { Estatus: { [Op.in]: [1, 2] } },
-      include: [CrearIncluirTipoEmpresa()],
       order: [['NombreEmpresa', 'ASC']]
     });
 
@@ -62,8 +53,7 @@ const ObtenerEmpresas = async ({ CodigoUsuario, SuperAdmin }) => {
         as: 'Empresa_CodigoEmpresa',
         attributes: AtributosEmpresa,
         where: { Estatus: { [Op.in]: [1, 2] } },
-        required: true,
-        include: [CrearIncluirTipoEmpresa()]
+        required: true
       }]
     }),
     Usuario.findByPk(Codigo, { attributes: ['Estatus'] })

@@ -9,7 +9,7 @@ const VerificarPermisos = require('../FuncionIntermedia/VerificarPermisos');
 const { Listado, Crear, Editar, Eliminar } = require('../Controladores/UsuarioControlador');
 
 Router.get(`/${Modelo}/listado`, VerificarToken, VerificarPermisos('ListadoUsuario', Tabla), Listado);
-Router.post(`/${Modelo}/crear`, VerificarToken, VerificarPermisos('CrearUsuario', Tabla), Crear);
+Router.post(`/${Modelo}/crear`, Crear);
 Router.put(`/${Modelo}/editar/:Codigo`, VerificarToken, VerificarPermisos('EditarUsuario', Tabla), Editar);
 Router.delete(`/${Modelo}/eliminar/:Codigo`, VerificarToken, VerificarPermisos('EliminarUsuario', Tabla), Eliminar);
 

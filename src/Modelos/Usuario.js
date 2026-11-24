@@ -7,22 +7,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       primaryKey: true
     },
-    CodigoEmpresa: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'Empresa',
-        key: 'CodigoEmpresa'
-      }
-    },
-    CodigoRol: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'Rol',
-        key: 'CodigoRol'
-      }
-    },
     NombreUsuario: {
       type: DataTypes.STRING(64),
       allowNull: false,

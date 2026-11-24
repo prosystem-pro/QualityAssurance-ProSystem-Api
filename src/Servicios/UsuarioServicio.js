@@ -5,14 +5,22 @@ const { LanzarError } = require('../Utilidades/ErrorServicios');
 
 const CodigoModelo = 'CodigoUsuario';
 
+const ConvertirRespuestaUsuario = (Usuario) => {
+  const DatosUsuario = Usuario.toJSON();
+  delete DatosUsuario.ClaveHash;
+  delete DatosUsuario.ClaveSalt;
+  return DatosUsuario;
+};
+
 const Listado = async () => {
-  return await Modelo.findAll({
+  const Usuarios = await Modelo.findAll({
     where: {
       Estatus: { [Op.in]: [1, 2] },
       SuperAdmin: { [Op.is]: null }
     },
     order: [['NombreUsuario', 'ASC']] 
   });
+  return Usuarios.map(ConvertirRespuestaUsuario);
 };
 
 const Crear = async (Datos) => {
@@ -38,7 +46,8 @@ const Crear = async (Datos) => {
   Datos.ClaveSalt = Salt;
   delete Datos.Clave;
 
-  return await Modelo.create(Datos);
+  const Usuario = await Modelo.create(Datos);
+  return ConvertirRespuestaUsuario(Usuario);
 };
 
 const Editar = async (Codigo, Datos) => {
@@ -79,7 +88,7 @@ const Editar = async (Codigo, Datos) => {
   }
 
   await Objeto.update(Datos);
-  return Objeto;
+  return ConvertirRespuestaUsuario(Objeto);
 };
 
 const Eliminar = async (Codigo) => {
@@ -96,7 +105,7 @@ const Eliminar = async (Codigo) => {
   }
 
   await Objeto.destroy();
-  return Objeto;
+  return ConvertirRespuestaUsuario(Objeto);
 };
 
 module.exports = {

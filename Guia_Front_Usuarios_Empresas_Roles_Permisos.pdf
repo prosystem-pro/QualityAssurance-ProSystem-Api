@@ -1,0 +1,242 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R 10 0 R 12 0 R] /Count 4 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 5129 >>
+stream
+BT /F2 20 Tf 0.08 0.20 0.34 rg 1 0 0 1 54 744 Tm (Guia para el frontend) Tj ET
+BT /F1 10 Tf 0.25 0.35 0.45 rg 1 0 0 1 54 709 Tm (Empresas, usuarios, roles y permisos | QualityAssurance API) Tj ET
+0.25 0.48 0.68 RG 0.8 w 54 690 m 558 690 l S
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 675 Tm (Objetivo: documentar el flujo y las rutas actuales para construir las pantallas de) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 662.5 Tm (administracion. Todas las rutas llevan el prefijo /api.) Tj ET
+BT /F2 13 Tf 0.08 0.25 0.42 rg 1 0 0 1 54 640 Tm (1. Modelo de acceso) Tj ET
+0.78 0.84 0.89 RG 0.5 w 54 627 m 558 627 l S
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 60 615 Tm (- Usuario contiene identidad y credenciales; no contiene CodigoEmpresa ni CodigoRol.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 60 599.5 Tm (- UsuarioEmpresa vincula CodigoUsuario, CodigoEmpresa y CodigoRol, ademas de) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 60 587 Tm (  EsEmpresaPrincipal y Estatus.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 60 571.5 Tm (- La unicidad de la asociacion usa usuario + empresa + rol. Por tanto, un usuario puede tener) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 60 559 Tm (  varios roles en una empresa; al cambiar de contexto debe elegir uno.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 60 543.5 Tm (- Rol es global. PermisoRolRecurso relaciona cada rol con recursos y permisos; esas reglas no) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 60 531 Tm (  se duplican por empresa.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 60 515.5 Tm (- Recurso identifica un area protegida de la API; Permiso identifica una accion, por ejemplo) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 60 503 Tm (  ListadoUsuario o EditarEmpresa.) Tj ET
+BT /F2 13 Tf 0.08 0.25 0.42 rg 1 0 0 1 54 481.5 Tm (2. Inicio de sesion y selector de empresa/rol) Tj ET
+0.78 0.84 0.89 RG 0.5 w 54 468.5 m 558 468.5 l S
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 456.5 Tm (POST /api/login - No requiere token. Cuerpo:) Tj ET
+q 0.95 0.97 0.99 rg 45 389.9 513 53.6 re f Q
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 432.5 Tm ({) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 422.1 Tm (  "NombreUsuario": "roberto",) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 411.70000000000005 Tm (  "Clave": "clave-del-usuario") Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 401.30000000000007 Tm (}) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 382.9000000000001 Tm (El login inicial toma la asociacion activa principal; si no existe principal, toma la de menor) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 370.4000000000001 Tm (CodigoUsuarioEmpresa. Devuelve Token, CodigoEmpresa, CodigoRol y permisos de esa asociacion, no) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 357.9000000000001 Tm (todos los roles.) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 341.4000000000001 Tm (GET /api/dashboard/empresas - Lista empresas asociadas al usuario; SuperAdmin recibe empresas) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 329.4000000000001 Tm (disponibles. Requiere el permiso ListadoDashboard.) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 314.4000000000001 Tm (GET /api/login/empresas/:CodigoEmpresa/roles - Devuelve los roles activos del usuario para esa) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 302.4000000000001 Tm (empresa. Requiere Bearer token.) Tj ET
+q 0.95 0.97 0.99 rg 45 183.80000000000007 513 105.60000000000001 re f Q
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 278.4000000000001 Tm (data: {) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 268.0000000000001 Tm (  "CodigoEmpresa": 5,) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 257.60000000000014 Tm (  "NombreEmpresa": "Empresa Norte",) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 247.20000000000013 Tm (  "AccesoCompleto": false,) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 236.80000000000013 Tm (  "Roles": [) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 226.40000000000012 Tm (    { "CodigoRol": 2, "NombreRol": "Consulta" },) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 216.0000000000001 Tm (    { "CodigoRol": 4, "NombreRol": "Administrador" }) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 205.6000000000001 Tm (  ]) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 195.2000000000001 Tm (}) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 176.8000000000001 Tm (POST /api/login/cambiar-empresa - Verifica la asociacion y emite un token para el rol escogido:) Tj ET
+q 0.95 0.97 0.99 rg 45 110.2000000000001 513 53.6 re f Q
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 152.8000000000001 Tm ({) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 142.4000000000001 Tm (  "CodigoEmpresa": 5,) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 132.00000000000009 Tm (  "CodigoRol": 4) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 121.60000000000008 Tm (}) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 103.20000000000007 Tm (Guardar el Token nuevo y reemplazar los permisos de sesion del frontend. SuperAdmin no necesita) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 90.70000000000007 Tm (elegir rol: recibe AccesoCompleto y CodigoRol null.) Tj ET
+BT /F1 8 Tf 0.35 0.40 0.45 rg 1 0 0 1 54 28 Tm (QualityAssurance API - Guia frontend) Tj ET
+BT /F1 8 Tf 0.35 0.40 0.45 rg 1 0 0 1 490 28 Tm (Pagina 1 de 4) Tj ET
+
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 9 0 R >>
+endobj
+9 0 obj
+<< /Length 5003 >>
+stream
+BT /F2 20 Tf 0.08 0.20 0.34 rg 1 0 0 1 54 744 Tm (3. Pantallas y rutas de administracion) Tj ET
+BT /F2 13 Tf 0.08 0.25 0.42 rg 1 0 0 1 54 703 Tm (Empresas) Tj ET
+0.78 0.84 0.89 RG 0.5 w 54 690 m 558 690 l S
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 678 Tm (GET /api/empresa/listado - Listar empresas.) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 663 Tm (POST /api/empresa/crear - Crear empresa.) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 648 Tm (PUT /api/empresa/editar/:Codigo - Editar empresa.) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 633 Tm (DELETE /api/empresa/eliminar/:Codigo - Eliminar empresa.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 618 Tm (Crear empresa requiere NombreEmpresa, Direccion y Telefono. El backend genera CodigoExterno. El) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 605.5 Tm (formulario no debe mostrar ni enviar CodigoTipoEmpresa.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 589 Tm (Ejemplo de creacion:) Tj ET
+q 0.95 0.97 0.99 rg 45 489.7 513 84.8 re f Q
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 563.5 Tm ({) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 553.1 Tm (  "NombreEmpresa": "Empresa Norte",) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 542.7 Tm (  "Direccion": "Calle 123",) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 532.3000000000001 Tm (  "Telefono": "55555555",) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 521.9000000000001 Tm (  "RazonSocial": "Empresa Norte S.A.",) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 511.5000000000001 Tm (  "NIT": "123456789") Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 501.10000000000014 Tm (}) Tj ET
+BT /F2 13 Tf 0.08 0.25 0.42 rg 1 0 0 1 54 476.70000000000016 Tm (Usuarios) Tj ET
+0.78 0.84 0.89 RG 0.5 w 54 463.70000000000016 m 558 463.70000000000016 l S
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 451.70000000000016 Tm (GET /api/usuario/listado | POST /api/usuario/crear | PUT /api/usuario/editar/:Codigo | DELETE) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 439.70000000000016 Tm (/api/usuario/eliminar/:Codigo) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 424.70000000000016 Tm (Crear usuario con NombreUsuario y Clave; NombreCompleto, ApellidoCompleto, Correo, Telefono y) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 412.20000000000016 Tm (Direccion son datos adicionales. No enviar CodigoEmpresa, CodigoRol, ClaveHash ni ClaveSalt.) Tj ET
+q 0.95 0.97 0.99 rg 45 312.90000000000015 513 84.8 re f Q
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 386.70000000000016 Tm ({) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 376.3000000000002 Tm (  "NombreUsuario": "roberto",) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 365.9000000000002 Tm (  "NombreCompleto": "Roberto",) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 355.5000000000002 Tm (  "ApellidoCompleto": "Lopez",) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 345.10000000000025 Tm (  "Clave": "clave-inicial",) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 334.7000000000003 Tm (  "Correo": "roberto@ejemplo.com") Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 324.3000000000003 Tm (}) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 305.9000000000003 Tm (Las respuestas de usuario excluyen ClaveHash y ClaveSalt. Crear el usuario y sus asociaciones) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 293.4000000000003 Tm (son llamadas separadas.) Tj ET
+BT /F2 13 Tf 0.08 0.25 0.42 rg 1 0 0 1 54 270.9000000000003 Tm (Asignar empresas y roles) Tj ET
+0.78 0.84 0.89 RG 0.5 w 54 257.9000000000003 m 558 257.9000000000003 l S
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 245.90000000000032 Tm (GET /api/usuarioempresa/listado | GET /api/usuarioempresa/:Codigo | POST /api/usuarioempresa/crear) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 233.90000000000032 Tm (| PUT /api/usuarioempresa/editar/:Codigo | DELETE /api/usuarioempresa/eliminar/:Codigo) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 218.90000000000032 Tm (Cuerpo para crear una asociacion:) Tj ET
+q 0.95 0.97 0.99 rg 45 119.60000000000032 513 84.8 re f Q
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 193.40000000000032 Tm ({) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 183.0000000000003 Tm (  "CodigoUsuario": 123,) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 172.6000000000003 Tm (  "CodigoEmpresa": 5,) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 162.2000000000003 Tm (  "CodigoRol": 4,) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 151.8000000000003 Tm (  "EsEmpresaPrincipal": 1,) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 141.4000000000003 Tm (  "Estatus": 1) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 131.00000000000028 Tm (}) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 112.60000000000028 Tm (CodigoUsuario, CodigoEmpresa y CodigoRol son requeridos. El listado devuelve asociaciones) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 100.10000000000028 Tm (planas; cargar los catalogos para mostrar nombres. La lista es global, no filtra por usuario.) Tj ET
+BT /F1 8 Tf 0.35 0.40 0.45 rg 1 0 0 1 54 28 Tm (QualityAssurance API - Guia frontend) Tj ET
+BT /F1 8 Tf 0.35 0.40 0.45 rg 1 0 0 1 490 28 Tm (Pagina 2 de 4) Tj ET
+
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 11 0 R >>
+endobj
+11 0 obj
+<< /Length 3837 >>
+stream
+BT /F2 20 Tf 0.08 0.20 0.34 rg 1 0 0 1 54 744 Tm (4. Roles y matriz de permisos) Tj ET
+BT /F2 13 Tf 0.08 0.25 0.42 rg 1 0 0 1 54 703 Tm (Roles) Tj ET
+0.78 0.84 0.89 RG 0.5 w 54 690 m 558 690 l S
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 678 Tm (GET /api/rol/listado | GET /api/rol/:Codigo | POST /api/rol/crear | PUT /api/rol/editar/:Codigo |) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 666 Tm (DELETE /api/rol/eliminar/:Codigo) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 651 Tm (Un rol es global y puede asignarse a usuarios en empresas distintas. Ejemplo de creacion:) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 638.5 Tm ({"NombreRol":"Consulta"}.) Tj ET
+BT /F2 13 Tf 0.08 0.25 0.42 rg 1 0 0 1 54 616 Tm (Catalogo de recursos y permisos) Tj ET
+0.78 0.84 0.89 RG 0.5 w 54 603 m 558 603 l S
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 591 Tm (GET /api/permisos-disponibles - Devuelve recursos/rutas API y los permisos definidos por ruta. No) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 579 Tm (enumera tablas fisicas de SQL Server; devuelve JSON directo.) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 564 Tm (GET /api/recurso/listado - Recursos y CodigoRecurso.) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 549 Tm (GET /api/permiso/listado - Permisos y CodigoPermiso.) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 534 Tm (GET /api/resumen-permisos - Nombres unicos de permisos usados por las rutas.) Tj ET
+BT /F2 13 Tf 0.08 0.25 0.42 rg 1 0 0 1 54 513 Tm (Configuracion de permisos del rol) Tj ET
+0.78 0.84 0.89 RG 0.5 w 54 500 m 558 500 l S
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 488 Tm (GET /api/permisorolrecurso/listado - Permisos ya asignados con nombres de rol, recurso y permiso.) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 473 Tm (POST /api/permisorolrecurso/crear - Agregar asignaciones por lote:) Tj ET
+q 0.95 0.97 0.99 rg 45 375.2 513 84.8 re f Q
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 449 Tm ({) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 438.6 Tm (  "CodigoRol": 4,) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 428.20000000000005 Tm (  "Datos": [) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 417.80000000000007 Tm (    { "CodigoRecurso": 3, "CodigoPermiso": 8, "Estatus": 1 },) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 407.4000000000001 Tm (    { "CodigoRecurso": 3, "CodigoPermiso": 9, "Estatus": 1 }) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 397.0000000000001 Tm (  ]) Tj ET
+BT /F3 7.7 Tf 0.12 0.18 0.24 rg 1 0 0 1 56 386.60000000000014 Tm (}) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 368.20000000000016 Tm (PUT /api/permisorolrecurso/editar - Recibe CodigoRol, CodigoRecurso, CodigoPermiso y Estatus.) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 353.20000000000016 Tm (DELETE) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 341.20000000000016 Tm (/api/permisorolrecurso/eliminar-por-rol-recurso-permiso/:CodigoRol/:CodigoRecurso/:CodigoPermiso -) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 329.20000000000016 Tm (Quitar una asignacion puntual.) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 314.20000000000016 Tm (GET /api/permisorolrecurso/filtrar-recursos/:CodigoRol - Recursos sin asignacion o con permisos) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 302.20000000000016 Tm (pendientes.) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 287.20000000000016 Tm (GET /api/permisorolrecurso-filtrar-permisos/:CodigoRol/:CodigoRecurso - Permisos validos aun no) Tj ET
+BT /F1 9.1 Tf 0 0 0 rg 1 0 0 1 54 275.20000000000016 Tm (asignados.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 260.20000000000016 Tm (Diseno sugerido: agrupar permisos por recurso y mostrar cada permiso como checkbox. Guardar cada) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 247.70000000000016 Tm (checkbox con CodigoRecurso + CodigoPermiso.) Tj ET
+BT /F1 8 Tf 0.35 0.40 0.45 rg 1 0 0 1 54 28 Tm (QualityAssurance API - Guia frontend) Tj ET
+BT /F1 8 Tf 0.35 0.40 0.45 rg 1 0 0 1 490 28 Tm (Pagina 3 de 4) Tj ET
+
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 13 0 R >>
+endobj
+13 0 obj
+<< /Length 3037 >>
+stream
+BT /F2 20 Tf 0.08 0.20 0.34 rg 1 0 0 1 54 744 Tm (5. Secuencia de integracion y consideraciones) Tj ET
+BT /F2 13 Tf 0.08 0.25 0.42 rg 1 0 0 1 54 703 Tm (Flujo recomendado) Tj ET
+0.78 0.84 0.89 RG 0.5 w 54 690 m 558 690 l S
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 678 Tm (1. Hacer POST /api/login y guardar el token recibido.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 661.5 Tm (2. Consultar GET /api/dashboard/empresas para mostrar las empresas disponibles.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 645 Tm (3. Al seleccionar empresa, consultar GET /api/login/empresas/:CodigoEmpresa/roles.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 628.5 Tm (4. Permitir elegir uno de los roles; enviar CodigoEmpresa y CodigoRol a POST) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 616 Tm (/api/login/cambiar-empresa.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 599.5 Tm (5. Reemplazar el token y actualizar el estado de permisos del frontend con) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 587 Tm (data.usuario.Permisos.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 570.5 Tm (6. Para operaciones de casos y ejecuciones, usar la empresa y rol que corresponden al token) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 558 Tm (activo.) Tj ET
+BT /F2 13 Tf 0.08 0.25 0.42 rg 1 0 0 1 54 535.5 Tm (Autorizacion) Tj ET
+0.78 0.84 0.89 RG 0.5 w 54 522.5 m 558 522.5 l S
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 510.5 Tm (Las rutas de administracion requieren token y el permiso concreto de la operacion, por ejemplo) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 498 Tm (CrearUsuario o EditarRol. SuperAdmin tiene acceso completo.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 481.5 Tm (Las operaciones de casos y ejecuciones verifican que la empresa solicitada coincida con) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 469 Tm (CodigoEmpresa del token y que CodigoRol siga asignado al usuario en esa empresa.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 452.5 Tm (La ruta de cambio de empresa valida usuario activo, empresa activa, asociacion y rol activo. Si) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 440 Tm (el rol no tiene permisos configurados, la API no puede emitir el contexto normal.) Tj ET
+BT /F2 13 Tf 0.08 0.25 0.42 rg 1 0 0 1 54 417.5 Tm (Formato de respuesta) Tj ET
+0.78 0.84 0.89 RG 0.5 w 54 404.5 m 558 404.5 l S
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 392.5 Tm (La mayoria de endpoints devuelve { success, tipo, message, data }. Las respuestas de errores) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 380 Tm (usan success:false y un mensaje. GET /api/permisos-disponibles devuelve JSON sin envoltorio.) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 363.5 Tm (Nota: toda gestion de usuario, empresa, rol y permisos permanece protegida por las reglas de) Tj ET
+BT /F1 9.2 Tf 0 0 0 rg 1 0 0 1 54 351 Tm (autorizacion de cada ruta.) Tj ET
+BT /F1 8.3 Tf 0.35 0.4 0.45 rg 1 0 0 1 54 334.5 Tm (Basado en las rutas y servicios actuales de QualityAssurance API.) Tj ET
+BT /F1 8 Tf 0.35 0.40 0.45 rg 1 0 0 1 54 28 Tm (QualityAssurance API - Guia frontend) Tj ET
+BT /F1 8 Tf 0.35 0.40 0.45 rg 1 0 0 1 490 28 Tm (Pagina 4 de 4) Tj ET
+
+endstream
+endobj
+xref
+0 14
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000135 00000 n 
+0000000232 00000 n 
+0000000334 00000 n 
+0000000429 00000 n 
+0000000575 00000 n 
+0000005756 00000 n 
+0000005902 00000 n 
+0000010957 00000 n 
+0000011105 00000 n 
+0000014995 00000 n 
+0000015143 00000 n 
+trailer
+<< /Size 14 /Root 1 0 R >>
+startxref
+18233
+%%EOF

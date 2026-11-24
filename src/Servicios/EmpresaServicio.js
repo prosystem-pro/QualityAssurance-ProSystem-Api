@@ -1,22 +1,10 @@
-const { Empresa, TipoEmpresa } = require('../Modelos/Relaciones');
+const { Empresa } = require('../Modelos/Relaciones');
 const { LanzarError } = require('../Utilidades/ErrorServicios');
 const { Op } = require('sequelize');
 const { randomUUID } = require('crypto');
 
 const CodigoModelo = 'CodigoEmpresa';
 const NombreModelo = 'NombreEmpresa'; 
-
-const ValidarTipoEmpresa = async (CodigoTipoEmpresa) => {
-  const Codigo = Number(CodigoTipoEmpresa);
-  if (!Number.isInteger(Codigo) || Codigo <= 0) {
-    throw LanzarError('Debe enviar un tipo de empresa válido.');
-  }
-
-  const Tipo = await TipoEmpresa.findByPk(Codigo);
-  if (!Tipo) throw LanzarError('El tipo de empresa no existe.');
-
-  return Codigo;
-};
 
 const GenerarCodigoExterno = async (NombreEmpresa, CodigoEmpresa = null) => {
   const PrimerNombre = String(NombreEmpresa || 'EMPRESA')
@@ -51,11 +39,8 @@ const Listado = async () => {
 };
 
 const Crear = async (Datos) => {
-  const DatosEmpresa = {
-    ...Datos,
-    CodigoTipoEmpresa: await ValidarTipoEmpresa(Datos.CodigoTipoEmpresa),
-    CodigoExterno: await GenerarCodigoExterno(Datos.NombreEmpresa)
-  };
+  const DatosEmpresa = { ...Datos };
+  DatosEmpresa.CodigoExterno = await GenerarCodigoExterno(Datos.NombreEmpresa);
   return await Empresa.create(DatosEmpresa);
 };
 
@@ -73,10 +58,7 @@ const Editar = async (Codigo, Datos) => {
   });
   if (!Objeto) throw LanzarError('Registro no encontrado', 404); 
 
-  const DatosActualizados = {
-    ...Datos,
-    CodigoTipoEmpresa: await ValidarTipoEmpresa(Datos.CodigoTipoEmpresa)
-  };
+  const DatosActualizados = { ...Datos };
   if (
     Object.prototype.hasOwnProperty.call(Datos, NombreModelo) &&
     Datos.NombreEmpresa !== Objeto.NombreEmpresa

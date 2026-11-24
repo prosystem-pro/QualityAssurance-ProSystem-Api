@@ -1,5 +1,5 @@
 // ARCHIVO GENERADO AUTOMÁTICAMENTE — No editar manualmente
-// Generado el: 2026-11-18T16:32:57.508Z
+// Generado el: 2026-11-24T18:07:32.349Z
 // Nombre configurado en .env: Relaciones.js
 
 const Path = require('path');
@@ -94,13 +94,13 @@ EstadoCaso.hasMany(CasoPrueba, {
   as: 'CasoPrueba_CodigoEstadoCaso'
 });
 
-Usuario.belongsTo(Rol, {
+UsuarioEmpresa.belongsTo(Rol, {
   foreignKey: 'CodigoRol',
   as: 'Rol_CodigoRol'
 });
-Rol.hasMany(Usuario, {
+Rol.hasMany(UsuarioEmpresa, {
   foreignKey: 'CodigoRol',
-  as: 'Usuario_CodigoRol'
+  as: 'UsuarioEmpresa_CodigoRol'
 });
 
 PermisoRolRecurso.belongsTo(Rol, {
@@ -164,15 +164,6 @@ UsuarioEmpresa.belongsTo(Empresa, {
 Empresa.hasMany(UsuarioEmpresa, {
   foreignKey: 'CodigoEmpresa',
   as: 'UsuarioEmpresa_CodigoEmpresa'
-});
-
-Usuario.belongsTo(Empresa, {
-  foreignKey: 'CodigoEmpresa',
-  as: 'Empresa_CodigoEmpresa'
-});
-Empresa.hasMany(Usuario, {
-  foreignKey: 'CodigoEmpresa',
-  as: 'Usuario_CodigoEmpresa'
 });
 
 CasoPrueba.belongsTo(Empresa, {
