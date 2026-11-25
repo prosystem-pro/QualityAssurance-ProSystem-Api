@@ -1,5 +1,5 @@
 // ARCHIVO GENERADO AUTOMÁTICAMENTE — No editar manualmente
-// Generado el: 2026-11-25T00:18:23.900Z
+// Generado el: 2026-11-25T02:05:37.373Z
 // Nombre configurado en .env: Relaciones.js
 
 const Path = require('path');
@@ -92,6 +92,33 @@ CasoPrueba.belongsTo(EstadoCaso, {
 EstadoCaso.hasMany(CasoPrueba, {
   foreignKey: 'CodigoEstadoCaso',
   as: 'CasoPrueba_CodigoEstadoCaso'
+});
+
+EjecucionPruebaPaso.belongsTo(EjecucionPruebaDetalle, {
+  foreignKey: 'CodigoEjecucionPruebaDetalle',
+  as: 'EjecucionPruebaDetalle_CodigoEjecucionPruebaDetalle'
+});
+EjecucionPruebaDetalle.hasMany(EjecucionPruebaPaso, {
+  foreignKey: 'CodigoEjecucionPruebaDetalle',
+  as: 'EjecucionPruebaPaso_CodigoEjecucionPruebaDetalle'
+});
+
+EjecucionPruebaDetalle.belongsTo(ResultadoEjecucion, {
+  foreignKey: 'CodigoResultadoEjecucion',
+  as: 'ResultadoEjecucion_CodigoResultadoEjecucion'
+});
+ResultadoEjecucion.hasMany(EjecucionPruebaDetalle, {
+  foreignKey: 'CodigoResultadoEjecucion',
+  as: 'EjecucionPruebaDetalle_CodigoResultadoEjecucion'
+});
+
+EjecucionPruebaPaso.belongsTo(ResultadoEjecucion, {
+  foreignKey: 'CodigoResultadoEjecucion',
+  as: 'ResultadoEjecucion_CodigoResultadoEjecucion'
+});
+ResultadoEjecucion.hasMany(EjecucionPruebaPaso, {
+  foreignKey: 'CodigoResultadoEjecucion',
+  as: 'EjecucionPruebaPaso_CodigoResultadoEjecucion'
 });
 
 Usuario.belongsTo(Rol, {
@@ -227,33 +254,6 @@ EjecucionPruebaDetalle.belongsTo(EjecucionPrueba, {
 EjecucionPrueba.hasMany(EjecucionPruebaDetalle, {
   foreignKey: 'CodigoEjecucionPrueba',
   as: 'EjecucionPruebaDetalle_CodigoEjecucionPrueba'
-});
-
-EjecucionPruebaPaso.belongsTo(EjecucionPruebaDetalle, {
-  foreignKey: 'CodigoEjecucionPruebaDetalle',
-  as: 'EjecucionPruebaDetalle_CodigoEjecucionPruebaDetalle'
-});
-EjecucionPruebaDetalle.hasMany(EjecucionPruebaPaso, {
-  foreignKey: 'CodigoEjecucionPruebaDetalle',
-  as: 'EjecucionPruebaPaso_CodigoEjecucionPruebaDetalle'
-});
-
-EjecucionPruebaDetalle.belongsTo(ResultadoEjecucion, {
-  foreignKey: 'CodigoResultado',
-  as: 'ResultadoEjecucion_CodigoResultado'
-});
-ResultadoEjecucion.hasMany(EjecucionPruebaDetalle, {
-  foreignKey: 'CodigoResultado',
-  as: 'EjecucionPruebaDetalle_CodigoResultado'
-});
-
-EjecucionPruebaPaso.belongsTo(ResultadoEjecucion, {
-  foreignKey: 'CodigoResultado',
-  as: 'ResultadoEjecucion_CodigoResultado'
-});
-ResultadoEjecucion.hasMany(EjecucionPruebaPaso, {
-  foreignKey: 'CodigoResultado',
-  as: 'EjecucionPruebaPaso_CodigoResultado'
 });
 
 Empresa.belongsTo(TipoEmpresa, {

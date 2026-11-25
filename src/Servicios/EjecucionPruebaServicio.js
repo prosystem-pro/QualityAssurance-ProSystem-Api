@@ -50,10 +50,10 @@ const AsociacionCarpetaCaso = () => ObtenerAsociacion(
   CasoPrueba, Carpeta, 'BelongsTo', 'CodigoCarpeta'
 );
 const AsociacionResultadoDetalle = () => ObtenerAsociacion(
-  EjecucionPruebaDetalle, ResultadoEjecucion, 'BelongsTo', 'CodigoResultado'
+  EjecucionPruebaDetalle, ResultadoEjecucion, 'BelongsTo', 'CodigoResultadoEjecucion'
 );
 const AsociacionResultadoPaso = () => ObtenerAsociacion(
-  EjecucionPruebaPaso, ResultadoEjecucion, 'BelongsTo', 'CodigoResultado'
+  EjecucionPruebaPaso, ResultadoEjecucion, 'BelongsTo', 'CodigoResultadoEjecucion'
 );
 const AsociacionUsuarioDetalle = () => ObtenerAsociacion(
   EjecucionPruebaDetalle, Usuario, 'BelongsTo', 'CodigoUsuario'
@@ -78,7 +78,7 @@ const CrearIncludesDetalle = () => [
   },
   {
     association: AsociacionResultadoDetalle(),
-    attributes: ['CodigoResultado', 'Nombre'],
+    attributes: ['CodigoResultadoEjecucion', 'Nombre'],
     required: false
   },
   {
@@ -99,7 +99,7 @@ const CrearIncludesDetalle = () => [
       },
       {
         association: AsociacionResultadoPaso(),
-        attributes: ['CodigoResultado', 'Nombre'],
+        attributes: ['CodigoResultadoEjecucion', 'Nombre'],
         required: false
       }
     ]
@@ -175,10 +175,10 @@ const ObtenerFecha = (Valor, Nombre) => {
   return Fecha;
 };
 
-const ValidarResultado = async (CodigoResultado, Transaccion) => {
-  const Codigo = ValidarEntero(CodigoResultado, 'CodigoResultado');
+const ValidarResultado = async (CodigoResultadoEjecucion, Transaccion) => {
+  const Codigo = ValidarEntero(CodigoResultadoEjecucion, 'CodigoResultadoEjecucion');
   const Resultado = await ResultadoEjecucion.findOne({
-    where: { CodigoResultado: Codigo, Estatus: EstatusVisibles },
+    where: { CodigoResultadoEjecucion: Codigo, Estatus: EstatusVisibles },
     transaction: Transaccion
   });
   if (!Resultado) throw LanzarError('El resultado de ejecución no existe o no está activo.', 400);
@@ -280,14 +280,14 @@ const ListadoResultadoEjecucion = async (CodigoEmpresaSolicitado, DatosUsuario) 
   await ValidarAccesoEmpresa(CodigoEmpresaSolicitado, DatosUsuario);
   return ResultadoEjecucion.findAll({
     where: { Estatus: 1 },
-    order: [['CodigoResultado', 'ASC']]
+    order: [['CodigoResultadoEjecucion', 'ASC']]
   });
 };
 
 const ObtenerResultadoEjecucionPorCodigo = async (Codigo, CodigoEmpresaSolicitado, DatosUsuario) => {
   await ValidarAccesoEmpresa(CodigoEmpresaSolicitado, DatosUsuario);
   const Resultado = await ResultadoEjecucion.findOne({
-    where: { CodigoResultado: ValidarEntero(Codigo, 'Codigo') }
+    where: { CodigoResultadoEjecucion: ValidarEntero(Codigo, 'Codigo') }
   });
   if (!Resultado) throw LanzarError('Resultado de ejecución no encontrado.', 404);
   return Resultado;
@@ -501,7 +501,7 @@ const NormalizarPasosEjecucion = async (Pasos, CodigoCasoPrueba, Transaccion) =>
     return {
       CodigoCasoPruebaPaso: ValidarEntero(Paso.CodigoCasoPruebaPaso, 'CodigoCasoPruebaPaso'),
       Orden: ValidarEntero(Paso.Orden, 'Orden'),
-      CodigoResultado: Paso.CodigoResultado,
+      CodigoResultadoEjecucion: Paso.CodigoResultadoEjecucion,
       AccionRealizada: Paso.AccionRealizada ?? null,
       ResultadoObtenido: Paso.ResultadoObtenido ?? null,
       Comentario: Paso.Comentario ?? null
@@ -536,7 +536,10 @@ const NormalizarPasosEjecucion = async (Pasos, CodigoCasoPrueba, Transaccion) =>
     ValidarTextoOpcional(Paso.Comentario, 'Comentario');
     Normalizados.push({
       ...Paso,
-      CodigoResultado: await ValidarResultado(Paso.CodigoResultado, Transaccion)
+      CodigoResultadoEjecucion: await ValidarResultado(
+        Paso.CodigoResultadoEjecucion,
+        Transaccion
+      )
     });
   }
   return Normalizados;
@@ -594,15 +597,15 @@ const CrearEjecucionPruebaDetalle = async (
     if (Existente) {
       throw LanzarError('Este caso de prueba ya está agregado a la ejecución.', 409);
     }
-    const CodigoResultado = await ValidarResultado(
-      Datos.CodigoResultado ?? ResultadoNoEjecutado, Transaccion
+    const CodigoResultadoEjecucion = await ValidarResultado(
+      Datos.CodigoResultadoEjecucion ?? ResultadoNoEjecutado, Transaccion
     );
     const TiempoEjecucionSegundos = ValidarDatosDetalle(Datos);
     const Pasos = await NormalizarPasosEjecucion(Datos.Pasos, CodigoCasoPrueba, Transaccion);
     const Detalle = await EjecucionPruebaDetalle.create({
       CodigoEjecucionPrueba,
       CodigoCasoPrueba,
-      CodigoResultado,
+      CodigoResultadoEjecucion,
       CodigoUsuario,
       Comentario: Datos.Comentario ?? null,
       ResultadoReal: Datos.ResultadoReal ?? null,
@@ -650,9 +653,9 @@ const EditarEjecucionPruebaDetalle = async (
     if (!Detalle) throw LanzarError('El detalle no pertenece a esta ejecución.', 404);
 
     const DatosActualizar = { CodigoUsuario, FechaUltimaModificacion: new Date() };
-    if (Datos.CodigoResultado !== undefined) {
-      DatosActualizar.CodigoResultado = await ValidarResultado(
-        Datos.CodigoResultado, Transaccion
+    if (Datos.CodigoResultadoEjecucion !== undefined) {
+      DatosActualizar.CodigoResultadoEjecucion = await ValidarResultado(
+        Datos.CodigoResultadoEjecucion, Transaccion
       );
     }
     if (Datos.Comentario !== undefined) {
@@ -775,8 +778,8 @@ const CrearEjecucionPruebaDetalleMultiple = async (
 
   return EjecucionPrueba.sequelize.transaction(async (Transaccion) => {
     await ValidarEjecucionEnProgreso(CodigoEjecucionPrueba, CodigoEmpresa, Transaccion);
-    const CodigoResultado = await ValidarResultado(
-      Datos.CodigoResultado ?? ResultadoNoEjecutado, Transaccion
+    const CodigoResultadoEjecucion = await ValidarResultado(
+      Datos.CodigoResultadoEjecucion ?? ResultadoNoEjecutado, Transaccion
     );
 
     const CodigosCasoTotales = new Set(CodigosCasoIndividuales);
@@ -827,7 +830,7 @@ const CrearEjecucionPruebaDetalleMultiple = async (
       await EjecucionPruebaDetalle.bulkCreate(CodigosNuevos.map((CodigoCasoPrueba) => ({
         CodigoEjecucionPrueba,
         CodigoCasoPrueba,
-        CodigoResultado,
+        CodigoResultadoEjecucion,
         CodigoUsuario
       })), { transaction: Transaccion });
     }

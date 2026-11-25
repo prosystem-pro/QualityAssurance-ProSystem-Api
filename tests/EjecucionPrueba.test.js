@@ -31,11 +31,11 @@ Asociar(EjecucionPruebaDetalle, EjecucionPruebaPaso, 'HasMany',
 Asociar(EjecucionPruebaDetalle, CasoPrueba, 'BelongsTo',
   'CodigoCasoPrueba', 'CasoPrueba_CodigoCasoPrueba');
 Asociar(EjecucionPruebaDetalle, ResultadoEjecucion, 'BelongsTo',
-  'CodigoResultado', 'ResultadoEjecucion_CodigoResultado');
+  'CodigoResultadoEjecucion', 'ResultadoEjecucion_CodigoResultadoEjecucion');
 Asociar(EjecucionPruebaDetalle, Usuario, 'BelongsTo',
   'CodigoUsuario', 'Usuario_CodigoUsuario');
 Asociar(EjecucionPruebaPaso, ResultadoEjecucion, 'BelongsTo',
-  'CodigoResultado', 'ResultadoEjecucion_CodigoResultado');
+  'CodigoResultadoEjecucion', 'ResultadoEjecucion_CodigoResultadoEjecucion');
 Asociar(EjecucionPruebaPaso, CasoPruebaPaso, 'BelongsTo',
   'CodigoCasoPruebaPaso', 'CasoPruebaPaso_CodigoCasoPruebaPaso');
 Asociar(CasoPrueba, Carpeta, 'BelongsTo',
@@ -128,7 +128,7 @@ ResultadoEjecucion.findAll = async (opciones) => {
 ResultadoEjecucion.findOne = async ({ where }) => {
   const estatusPermitidos = where.Estatus[require('sequelize').Op.in];
   return resultados.find((resultado) =>
-    resultado.CodigoResultado === where.CodigoResultado &&
+    resultado.CodigoResultadoEjecucion === where.CodigoResultadoEjecucion &&
     estatusPermitidos.includes(resultado.Estatus)
   ) || null;
 };
@@ -179,9 +179,9 @@ const reiniciarDatos = () => {
   datosDetalles = [];
   datosPasos = [];
   resultados = [
-    { CodigoResultado: 1, Nombre: 'PASA', Estatus: 1 },
-    { CodigoResultado: 2, Nombre: 'FALLA', Estatus: 1 },
-    { CodigoResultado: 3, Nombre: 'INACTIVO', Estatus: 0 }
+    { CodigoResultadoEjecucion: 1, Nombre: 'PASA', Estatus: 1 },
+    { CodigoResultadoEjecucion: 2, Nombre: 'FALLA', Estatus: 1 },
+    { CodigoResultadoEjecucion: 3, Nombre: 'INACTIVO', Estatus: 0 }
   ];
   casos = [];
   pasosOriginales = [];
@@ -253,13 +253,13 @@ test('rechaza detalles de casos de otra empresa y resultados fuera del catálogo
 
   await assert.rejects(servicio.CrearEjecucionPruebaDetalle(100, {
     CodigoCasoPrueba: 10,
-    CodigoResultado: 1
+    CodigoResultadoEjecucion: 1
   }, 7, admin), { statusCode: 404 });
 
   casos = [{ CodigoCasoPrueba: 10, CodigoEmpresa: 7, Titulo: 'Caso válido' }];
   await assert.rejects(servicio.CrearEjecucionPruebaDetalle(100, {
     CodigoCasoPrueba: 10,
-    CodigoResultado: 3
+    CodigoResultadoEjecucion: 3
   }, 7, admin), { statusCode: 400 });
   assert.equal(datosDetalles.length, 0);
 });
@@ -280,26 +280,26 @@ test('registra resultado del caso y pasos originales sin aceptar un paso de otro
 
   const detalle = await servicio.CrearEjecucionPruebaDetalle(100, {
     CodigoCasoPrueba: 10,
-    CodigoResultado: 1,
+    CodigoResultadoEjecucion: 1,
     CodigoUsuario: 999,
     Pasos: [{
       CodigoCasoPruebaPaso: 30,
       Orden: 1,
-      CodigoResultado: 2
+      CodigoResultadoEjecucion: 2
     }]
   }, 7, admin);
 
   assert.equal(detalle.CodigoUsuario, 44);
   assert.equal(datosPasos[0].CodigoEjecucionPruebaDetalle, detalle.CodigoEjecucionPruebaDetalle);
-  assert.equal(datosPasos[0].CodigoResultado, 2);
+  assert.equal(datosPasos[0].CodigoResultadoEjecucion, 2);
 
   await assert.rejects(servicio.CrearEjecucionPruebaDetalle(100, {
     CodigoCasoPrueba: 10,
-    CodigoResultado: 1,
+    CodigoResultadoEjecucion: 1,
     Pasos: [{
       CodigoCasoPruebaPaso: 31,
       Orden: 1,
-      CodigoResultado: 1
+      CodigoResultadoEjecucion: 1
     }]
   }, 7, admin), { statusCode: 400 });
 });
@@ -309,7 +309,9 @@ test('administra el catálogo de resultados con nombre único y sin enviar estat
   const findOneOriginal = ResultadoEjecucion.findOne;
   const createOriginal = ResultadoEjecucion.create;
   ResultadoEjecucion.findOne = async ({ where }) => {
-    const encontrado = resultados.find((r) => r.CodigoResultado === where.CodigoResultado);
+    const encontrado = resultados.find((r) =>
+      r.CodigoResultadoEjecucion === where.CodigoResultadoEjecucion
+    );
     return encontrado ? ConvertirAInstancia(encontrado) : null;
   };
   ResultadoEjecucion.create = async (datos) => {
@@ -318,7 +320,7 @@ test('administra el catálogo de resultados con nombre único y sin enviar estat
       error.name = 'SequelizeUniqueConstraintError';
       throw error;
     }
-    const nuevo = { CodigoResultado: 10, Estatus: 1, ...datos };
+    const nuevo = { CodigoResultadoEjecucion: 10, Estatus: 1, ...datos };
     resultados.push(nuevo);
     return ConvertirAInstancia(nuevo);
   };
@@ -380,7 +382,7 @@ test('agrega en bloque los casos de una carpeta con subcarpetas y casos sueltos,
     const respuesta = await servicio.CrearEjecucionPruebaDetalleMultiple(100, {
       CodigosCarpeta: [1],
       CodigosCasoPrueba: [12],
-      CodigoResultado: 1
+      CodigoResultadoEjecucion: 1
     }, 7, admin);
     assert.equal(respuesta.TotalCreados, 2);
     assert.deepEqual(respuesta.CodigosCasoOmitidos, [10]);
@@ -388,7 +390,10 @@ test('agrega en bloque los casos de una carpeta con subcarpetas y casos sueltos,
     assert.ok(detallesBd.every((d) => d.CodigoUsuario === undefined || d.CodigoUsuario === 44));
     assert.equal(respuesta.Creados[0].CasoPrueba.Carpeta.CodigoCarpeta, 1);
     await assert.rejects(servicio.CrearEjecucionPruebaDetalleMultiple(100, {}, 7, admin), { statusCode: 400 });
-    await assert.rejects(servicio.CrearEjecucionPruebaDetalleMultiple(100, { CodigosCarpeta: [1, 99], CodigoResultado: 1 }, 7, admin), { statusCode: 404 });
+    await assert.rejects(servicio.CrearEjecucionPruebaDetalleMultiple(100, {
+      CodigosCarpeta: [1, 99],
+      CodigoResultadoEjecucion: 1
+    }, 7, admin), { statusCode: 404 });
   } finally {
     EjecucionPrueba.findOne = originales.ejecucionFindOne;
     CasoPrueba.findAll = originales.casoFindAll;

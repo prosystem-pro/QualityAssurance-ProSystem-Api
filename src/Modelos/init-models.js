@@ -86,10 +86,10 @@ function initModels(sequelize) {
   EstadoCaso.hasMany(CasoPrueba, { as: "CasoPruebas", foreignKey: "CodigoEstadoCaso"});
   CasoPrueba.belongsTo(Prioridad, { as: "CodigoPrioridad_Prioridad", foreignKey: "CodigoPrioridad"});
   Prioridad.hasMany(CasoPrueba, { as: "CasoPruebas", foreignKey: "CodigoPrioridad"});
-  EjecucionPruebaDetalle.belongsTo(ResultadoEjecucion, { as: "CodigoResultado_ResultadoEjecucion", foreignKey: "CodigoResultado"});
-  ResultadoEjecucion.hasMany(EjecucionPruebaDetalle, { as: "EjecucionPruebaDetalles", foreignKey: "CodigoResultado"});
-  EjecucionPruebaPaso.belongsTo(ResultadoEjecucion, { as: "CodigoResultado_ResultadoEjecucion", foreignKey: "CodigoResultado"});
-  ResultadoEjecucion.hasMany(EjecucionPruebaPaso, { as: "EjecucionPruebaPasos", foreignKey: "CodigoResultado"});
+  EjecucionPruebaDetalle.belongsTo(ResultadoEjecucion, { as: "CodigoResultadoEjecucion_ResultadoEjecucion", foreignKey: "CodigoResultadoEjecucion"});
+  ResultadoEjecucion.hasMany(EjecucionPruebaDetalle, { as: "EjecucionPruebaDetalles", foreignKey: "CodigoResultadoEjecucion"});
+  EjecucionPruebaPaso.belongsTo(ResultadoEjecucion, { as: "CodigoResultadoEjecucion_ResultadoEjecucion", foreignKey: "CodigoResultadoEjecucion"});
+  ResultadoEjecucion.hasMany(EjecucionPruebaPaso, { as: "EjecucionPruebaPasos", foreignKey: "CodigoResultadoEjecucion"});
   CasoPrueba.belongsTo(TipoPrueba, { as: "CodigoTipoPrueba_TipoPrueba", foreignKey: "CodigoTipoPrueba"});
   TipoPrueba.hasMany(CasoPrueba, { as: "CasoPruebas", foreignKey: "CodigoTipoPrueba"});
 

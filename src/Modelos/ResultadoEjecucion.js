@@ -1,9 +1,9 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('ResultadoEjecucion', {
-    CodigoResultado: {
+    CodigoResultadoEjecucion: {
       autoIncrement: true,
-      type: DataTypes.TINYINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
@@ -36,7 +36,7 @@ module.exports = function(sequelize, DataTypes) {
         name: "Pk_QaResultadoEjecucion",
         unique: true,
         fields: [
-          { name: "CodigoResultado" },
+          { name: "CodigoResultadoEjecucion" },
         ]
       },
       {

@@ -23,12 +23,12 @@ module.exports = function(sequelize, DataTypes) {
         key: 'CodigoCasoPrueba'
       }
     },
-    CodigoResultado: {
-      type: DataTypes.TINYINT,
-      allowNull: false,
+    CodigoResultadoEjecucion: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
       references: {
         model: 'ResultadoEjecucion',
-        key: 'CodigoResultado'
+        key: 'CodigoResultadoEjecucion'
       }
     },
     CodigoUsuario: {

@@ -23,6 +23,14 @@ module.exports = function(sequelize, DataTypes) {
         key: 'CodigoCasoPruebaPaso'
       }
     },
+    CodigoResultadoEjecucion: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'ResultadoEjecucion',
+        key: 'CodigoResultadoEjecucion'
+      }
+    },
     Orden: {
       type: DataTypes.INTEGER,
       allowNull: false
@@ -34,14 +42,6 @@ module.exports = function(sequelize, DataTypes) {
     ResultadoObtenido: {
       type: DataTypes.TEXT,
       allowNull: true
-    },
-    CodigoResultado: {
-      type: DataTypes.TINYINT,
-      allowNull: false,
-      references: {
-        model: 'ResultadoEjecucion',
-        key: 'CodigoResultado'
-      }
     },
     Comentario: {
       type: DataTypes.TEXT,
