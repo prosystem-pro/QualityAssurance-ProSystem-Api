@@ -6,11 +6,11 @@ const usuario = {
   CodigoUsuario: 4,
   NombreUsuario: 'usuario',
   ClaveHash: 'hash',
+  CodigoRol: 22,
   Estatus: 1,
   SuperAdmin: null
 };
 const Empresa = {};
-const Rol = {};
 let consultaAsociacion;
 let tokenGenerado;
 let codigoPermisos;
@@ -22,13 +22,15 @@ const relaciones = {
     }
   },
   Empresa,
-  Rol,
+  Rol: {
+    async findOne({ where }) {
+      return where.CodigoRol === 22 ? { CodigoRol: 22, NombreRol: 'Editor', Estatus: 1 } : null;
+    }
+  },
   UsuarioEmpresa: {
     async findOne(opciones) {
       consultaAsociacion = opciones;
       return {
-        CodigoRol: 22,
-        Rol_CodigoRol: { CodigoRol: 22, NombreRol: 'Editor', Estatus: 1 },
         Empresa_CodigoEmpresa: {
           CodigoEmpresa: 8,
           NombreEmpresa: 'Empresa principal',
@@ -71,7 +73,7 @@ Module._load = function(solicitud, padre, principal) {
 const { IniciarSesionServicio } = require('../src/Servicios/LoginServicio');
 Module._load = cargarOriginal;
 
-test('obtiene el rol y la empresa desde la asociación prioritaria del usuario', async () => {
+test('obtiene el rol del usuario y la empresa desde su asociación prioritaria', async () => {
   const respuesta = await IniciarSesionServicio('usuario', 'clave');
 
   assert.equal(consultaAsociacion.where.CodigoUsuario, usuario.CodigoUsuario);
@@ -81,10 +83,7 @@ test('obtiene el rol y la empresa desde la asociación prioritaria del usuario',
   ]);
   assert.deepEqual(
     consultaAsociacion.include.map(({ model, as }) => ({ model, as })),
-    [
-      { model: Rol, as: 'Rol_CodigoRol' },
-      { model: Empresa, as: 'Empresa_CodigoEmpresa' }
-    ]
+    [{ model: Empresa, as: 'Empresa_CodigoEmpresa' }]
   );
   assert.equal(codigoPermisos, 22);
   assert.equal(tokenGenerado.CodigoRol, 22);

@@ -67,6 +67,7 @@ let siguienteEjecucion = 100;
 let siguienteDetalle = 200;
 let empresaActiva = true;
 let opcionesCatalogo;
+let opcionesAsociacionUsuarioEmpresa;
 
 const EjecutarTransaccion = async (ejecutar) =>
   ejecutar({ id: 'transaccion-prueba' });
@@ -134,7 +135,10 @@ ResultadoEjecucion.findOne = async ({ where }) => {
 
 Empresa.findOne = async () => empresaActiva ? { CodigoEmpresa: 7 } : null;
 Usuario.findOne = async () => ({ CodigoUsuario: 44 });
-UsuarioEmpresa.findOne = async () => ({ CodigoUsuarioEmpresa: 1 });
+UsuarioEmpresa.findOne = async (opciones) => {
+  opcionesAsociacionUsuarioEmpresa = opciones;
+  return { CodigoUsuarioEmpresa: 1 };
+};
 CasoPrueba.findOne = async ({ where }) =>
   casos.find((caso) =>
     caso.CodigoCasoPrueba === where.CodigoCasoPrueba &&
@@ -185,6 +189,7 @@ const reiniciarDatos = () => {
   siguienteDetalle = 200;
   empresaActiva = true;
   opcionesCatalogo = undefined;
+  opcionesAsociacionUsuarioEmpresa = undefined;
 };
 
 test('el catálogo devuelve solo resultados activos y valida acceso a empresa', async () => {
@@ -194,6 +199,24 @@ test('el catálogo devuelve solo resultados activos y valida acceso a empresa', 
   assert.equal(opcionesCatalogo.where.Estatus, 1);
   empresaActiva = false;
   await assert.rejects(servicio.ListadoResultadoEjecucion(7, admin), { statusCode: 404 });
+});
+
+test('valida la empresa del usuario sin requerir rol en la asociación', async () => {
+  reiniciarDatos();
+  await servicio.ListadoResultadoEjecucion(7, {
+    CodigoUsuario: 44,
+    CodigoRol: 2,
+    CodigoEmpresa: 7,
+    SuperAdmin: null
+  });
+
+  assert.equal(opcionesAsociacionUsuarioEmpresa.where.CodigoUsuario, 44);
+  assert.equal(opcionesAsociacionUsuarioEmpresa.where.CodigoEmpresa, 7);
+  assert.deepEqual(
+    opcionesAsociacionUsuarioEmpresa.where.Estatus[require('sequelize').Op.in],
+    [1, 2]
+  );
+  assert.equal('CodigoRol' in opcionesAsociacionUsuarioEmpresa.where, false);
 });
 
 test('crea encabezado con empresa y usuario autenticado, no con los valores del cliente', async () => {

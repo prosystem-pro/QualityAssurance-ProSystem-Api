@@ -32,7 +32,10 @@ const Buscar = async (req, res) => {
 const Crear = async (req, res) => {
   try {
     const Creado = await Servicio.Crear(req.body);
-    return ResponderExito(res, 'Permiso guardado exitosamente', Creado, 201);
+    const Mensaje = Array.isArray(req.body)
+      ? 'Permisos guardados exitosamente'
+      : 'Permiso guardado exitosamente';
+    return ResponderExito(res, Mensaje, Creado, 201);
   } catch (error) {
     return ManejarError(error, res, 'Error al crear el registro');
   }
@@ -56,11 +59,25 @@ const Eliminar = async (req, res) => {
   }
 };
 
+const EliminarEnLote = async (req, res) => {
+  try {
+    const CantidadEliminada = await Servicio.EliminarEnLote(req.body);
+    return ResponderExito(
+      res,
+      `Se eliminaron ${CantidadEliminada} permisos exitosamente`,
+      { CantidadEliminada }
+    );
+  } catch (error) {
+    return ManejarError(error, res, 'Error al eliminar los permisos');
+  }
+};
+
 module.exports = {
   Listado,
   ObtenerPorCodigo,
   Buscar,
   Crear,
   Editar,
-  Eliminar
+  Eliminar,
+  EliminarEnLote
 };

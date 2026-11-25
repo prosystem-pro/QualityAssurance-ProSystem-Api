@@ -131,10 +131,6 @@ const ValidarAccesoEmpresa = async (CodigoEmpresaSolicitado, DatosUsuario) => {
   if (Number(DatosUsuario?.CodigoEmpresa) !== CodigoEmpresa) {
     throw LanzarError('Cambie a la empresa seleccionada antes de continuar.', 403);
   }
-  const CodigoRol = Number(DatosUsuario?.CodigoRol);
-  if (!Number.isInteger(CodigoRol) || CodigoRol <= 0) {
-    throw LanzarError('El token no contiene un rol válido para la empresa.', 403);
-  }
   const [UsuarioActual, Asociacion] = await Promise.all([
     Usuario.findOne({
       where: { CodigoUsuario, Estatus: 1 },
@@ -144,7 +140,6 @@ const ValidarAccesoEmpresa = async (CodigoEmpresaSolicitado, DatosUsuario) => {
       where: {
         CodigoUsuario,
         [CodigoEmpresaModelo]: CodigoEmpresa,
-        CodigoRol,
         Estatus: EstatusVisibles
       },
       attributes: ['CodigoUsuarioEmpresa']

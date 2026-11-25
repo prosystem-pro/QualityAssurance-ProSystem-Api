@@ -4,6 +4,7 @@ const Module = require('node:module');
 
 const usuario = {
   CodigoUsuario: 5,
+  CodigoRol: 7,
   NombreUsuario: 'Roberto',
   SuperAdmin: null,
   Estatus: 1
@@ -12,14 +13,10 @@ const empresa = {
   CodigoEmpresa: 9,
   NombreEmpresa: 'Empresa 9'
 };
-const roles = [
-  { CodigoRol: 3, NombreRol: 'Consulta', Estatus: 1 },
-  { CodigoRol: 7, NombreRol: 'Administrador', Estatus: 1 }
-];
-let consultaRoles;
 let consultaAsociacion;
 let datosToken;
 let codigoRolPermisos;
+let empresaAsignada = true;
 
 const ModeloUsuario = {
   async findOne() {
@@ -31,21 +28,18 @@ const ModeloEmpresa = {
     return where.CodigoEmpresa === empresa.CodigoEmpresa ? empresa : null;
   }
 };
+const ModeloRol = {
+  async findOne({ where }) {
+    return where.CodigoRol === usuario.CodigoRol
+      ? { CodigoRol: usuario.CodigoRol, NombreRol: 'Administrador', Estatus: 1 }
+      : null;
+  }
+};
 const ModeloUsuarioEmpresa = {
-  async findAll(opciones) {
-    consultaRoles = opciones;
-    return roles.map((rol) => ({
-      CodigoRol: rol.CodigoRol,
-      Rol_CodigoRol: rol
-    }));
-  },
   async findOne(opciones) {
     consultaAsociacion = opciones;
-    const rol = roles.find((actual) =>
-      actual.CodigoRol === opciones.where.CodigoRol
-    );
-    return rol
-      ? { CodigoRol: rol.CodigoRol, Rol_CodigoRol: rol }
+    return empresaAsignada && opciones.where.CodigoEmpresa === empresa.CodigoEmpresa
+      ? { CodigoEmpresa: empresa.CodigoEmpresa }
       : null;
   }
 };
@@ -67,7 +61,7 @@ Module._load = function(solicitud, padre, principal) {
     if (solicitud === '../Modelos/Relaciones') {
       return {
         Usuario: ModeloUsuario,
-        Rol: {},
+        Rol: ModeloRol,
         Empresa: ModeloEmpresa,
         UsuarioEmpresa: ModeloUsuarioEmpresa
       };
@@ -92,43 +86,34 @@ Module._load = function(solicitud, padre, principal) {
   }
   return cargarOriginal.call(this, solicitud, padre, principal);
 };
-const {
-  ObtenerRolesPorEmpresaServicio,
-  CambiarEmpresaServicio
-} = require('../src/Servicios/LoginServicio');
+const { CambiarEmpresaServicio } = require('../src/Servicios/LoginServicio');
 Module._load = cargarOriginal;
 
-test('lista solamente los roles activos del usuario en la empresa solicitada', async () => {
-  const respuesta = await ObtenerRolesPorEmpresaServicio(9, {
+test('cambia empresa manteniendo el rol global del usuario', async () => {
+  const respuesta = await CambiarEmpresaServicio(9, {
     CodigoUsuario: usuario.CodigoUsuario,
     SuperAdmin: null
   });
 
-  assert.equal(consultaRoles.where.CodigoEmpresa, empresa.CodigoEmpresa);
-  assert.equal(consultaRoles.where.CodigoUsuario, usuario.CodigoUsuario);
-  assert.deepEqual(respuesta.Roles.map((rol) => rol.CodigoRol), [3, 7]);
-});
-
-test('emite el token con el rol elegido para la empresa seleccionada', async () => {
-  const respuesta = await CambiarEmpresaServicio(9, 7, {
+  assert.deepEqual(consultaAsociacion.where, {
     CodigoUsuario: usuario.CodigoUsuario,
-    SuperAdmin: null
+    CodigoEmpresa: empresa.CodigoEmpresa,
+    Estatus: 1
   });
-
-  assert.equal(consultaAsociacion.where.CodigoEmpresa, empresa.CodigoEmpresa);
-  assert.equal(consultaAsociacion.where.CodigoRol, 7);
   assert.equal(datosToken.CodigoEmpresa, empresa.CodigoEmpresa);
-  assert.equal(datosToken.CodigoRol, 7);
-  assert.equal(codigoRolPermisos, 7);
-  assert.equal(respuesta.usuario.Permisos[0].CodigoRol, 7);
+  assert.equal(datosToken.CodigoRol, usuario.CodigoRol);
+  assert.equal(codigoRolPermisos, usuario.CodigoRol);
+  assert.equal(respuesta.usuario.Permisos[0].CodigoRol, usuario.CodigoRol);
 });
 
-test('rechaza un rol que no está asignado al usuario en esa empresa', async () => {
+test('rechaza cambiar a una empresa no asignada al usuario', async () => {
+  empresaAsignada = false;
   await assert.rejects(
-    CambiarEmpresaServicio(9, 99, {
+    CambiarEmpresaServicio(9, {
       CodigoUsuario: usuario.CodigoUsuario,
       SuperAdmin: null
     }),
     { statusCode: 403 }
   );
+  empresaAsignada = true;
 });

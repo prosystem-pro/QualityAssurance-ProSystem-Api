@@ -22,26 +22,4 @@ Router.get(`/${Modelo}/filtrar-roles`, VerificarToken, VerificarPermisos('VerRol
 Router.get(`/${Modelo}/filtrar-recursos/:CodigoRol`, VerificarToken, VerificarPermisos('VerRecurso', Tabla), FiltrarRecursos);
 Router.get(`/${Modelo}-filtrar-permisos/:CodigoRol/:CodigoRecurso`, VerificarToken, VerificarPermisos('VerRolRecurso', Tabla), FiltrarPermisos);
 
-Router.get(`/${Modelo}/permisos-disponibles`, VerificarToken, VerificarPermisos('VerPermisoDisponibleTiempoReal', Tabla), (req, res) => {
-  const fs = require('fs');
-
-  const RutaArchivo = __filename;
-  const Contenido = fs.readFileSync(RutaArchivo, 'utf8');
-
-  const ExpReg = /VerificarPermisos\('(\w+)',\s*Tabla\)/g;
-  const ConjuntoPermisos = new Set();
-  let Coincidencia;
-
-  while ((Coincidencia = ExpReg.exec(Contenido)) !== null) {
-    ConjuntoPermisos.add(Coincidencia[1]);
-  }
-
-  const Permisos = Array.from(ConjuntoPermisos);
-
-  res.json({
-    Tabla,
-    Permisos
-  });
-});
-
 module.exports = Router;

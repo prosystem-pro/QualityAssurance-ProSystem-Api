@@ -41,7 +41,21 @@ const Buscar = async (TipoBusqueda, ValorBusqueda) => {
 };
 
 const Crear = async (Datos) => {
-    if (!Datos || !Datos[NombreModelo]) {
+    const EsRecursoValido = (Dato) =>
+        Dato !== null &&
+        typeof Dato === 'object' &&
+        !Array.isArray(Dato) &&
+        typeof Dato[NombreModelo] === 'string' &&
+        Dato[NombreModelo].trim().length > 0;
+
+    if (Array.isArray(Datos)) {
+        if (Datos.length === 0 || !Datos.every(EsRecursoValido)) {
+            throw LanzarError('Cada recurso debe incluir un NombreRecurso válido', 400);
+        }
+        return await Modelo.bulkCreate(Datos, { validate: true });
+    }
+
+    if (!EsRecursoValido(Datos)) {
         throw LanzarError('Datos inválidos para crear registro', 400);
     }
     return await Modelo.create(Datos);
@@ -65,11 +79,41 @@ const Eliminar = async (Codigo) => {
     return Objeto;
 };
 
+const EliminarEnLote = async (Codigos) => {
+    if (!Array.isArray(Codigos) || Codigos.length === 0) {
+        throw LanzarError('Debe enviar una lista de códigos de recursos', 400);
+    }
+
+    const CodigosNormalizados = Codigos.map((Codigo) => {
+        if (typeof Codigo !== 'number' && typeof Codigo !== 'string') return NaN;
+        if (typeof Codigo === 'string' && !Codigo.trim()) return NaN;
+        return Number(Codigo);
+    });
+
+    if (CodigosNormalizados.some((Codigo) =>
+        !Number.isSafeInteger(Codigo) || Codigo <= 0
+    )) {
+        throw LanzarError('La lista contiene códigos de recurso inválidos', 400);
+    }
+
+    const CodigosUnicos = [...new Set(CodigosNormalizados)];
+    const CantidadEliminada = await Modelo.destroy({
+        where: { [CodigoModelo]: { [Op.in]: CodigosUnicos } }
+    });
+
+    if (CantidadEliminada === 0) {
+        throw LanzarError('No se encontraron recursos para eliminar', 404);
+    }
+
+    return CantidadEliminada;
+};
+
 module.exports = {
     Listado,
     ObtenerPorCodigo,
     Buscar,
     Crear,
     Editar,
-    Eliminar
+    Eliminar,
+    EliminarEnLote
 };

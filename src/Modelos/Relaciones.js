@@ -1,5 +1,5 @@
 // ARCHIVO GENERADO AUTOMÁTICAMENTE — No editar manualmente
-// Generado el: 2026-11-24T18:07:32.349Z
+// Generado el: 2026-11-25T00:18:23.900Z
 // Nombre configurado en .env: Relaciones.js
 
 const Path = require('path');
@@ -31,15 +31,6 @@ const UsuarioEmpresa = require(Path.join(RutaModelos, 'UsuarioEmpresa.js'))(Base
 
 // === RELACIONES ===
 
-EjecucionPruebaDetalle.belongsTo(Usuario, {
-  foreignKey: 'CodigoUsuario',
-  as: 'Usuario_CodigoUsuario'
-});
-Usuario.hasMany(EjecucionPruebaDetalle, {
-  foreignKey: 'CodigoUsuario',
-  as: 'EjecucionPruebaDetalle_CodigoUsuario'
-});
-
 UsuarioEmpresa.belongsTo(Usuario, {
   foreignKey: 'CodigoUsuario',
   as: 'Usuario_CodigoUsuario'
@@ -65,6 +56,15 @@ EjecucionPrueba.belongsTo(Usuario, {
 Usuario.hasMany(EjecucionPrueba, {
   foreignKey: 'CodigoUsuario',
   as: 'EjecucionPrueba_CodigoUsuario'
+});
+
+EjecucionPruebaDetalle.belongsTo(Usuario, {
+  foreignKey: 'CodigoUsuario',
+  as: 'Usuario_CodigoUsuario'
+});
+Usuario.hasMany(EjecucionPruebaDetalle, {
+  foreignKey: 'CodigoUsuario',
+  as: 'EjecucionPruebaDetalle_CodigoUsuario'
 });
 
 CasoPrueba.belongsTo(TipoPrueba, {
@@ -94,13 +94,13 @@ EstadoCaso.hasMany(CasoPrueba, {
   as: 'CasoPrueba_CodigoEstadoCaso'
 });
 
-UsuarioEmpresa.belongsTo(Rol, {
+Usuario.belongsTo(Rol, {
   foreignKey: 'CodigoRol',
   as: 'Rol_CodigoRol'
 });
-Rol.hasMany(UsuarioEmpresa, {
+Rol.hasMany(Usuario, {
   foreignKey: 'CodigoRol',
-  as: 'UsuarioEmpresa_CodigoRol'
+  as: 'Usuario_CodigoRol'
 });
 
 PermisoRolRecurso.belongsTo(Rol, {

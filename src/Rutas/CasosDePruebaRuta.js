@@ -6,7 +6,7 @@ const ModeloPrioridad = 'prioridad';
 const ModeloEstadoCaso = 'estadocaso';
 const ModeloCarpeta = 'carpeta';
 const ModeloCasoPrueba = 'casoprueba';
-const Tabla = 'CasosDeUso';
+const Tabla = 'CasosDePrueba';
 
 
 const {

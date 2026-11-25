@@ -25,15 +25,6 @@ module.exports = function(sequelize, DataTypes) {
       },
       unique: "Uq_UsuarioEmpresa"
     },
-    CodigoRol: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Rol',
-        key: 'CodigoRol'
-      },
-      unique: "Uq_UsuarioEmpresa"
-    },
     EsEmpresaPrincipal: {
       type: DataTypes.TINYINT,
       allowNull: false,
@@ -68,7 +59,6 @@ module.exports = function(sequelize, DataTypes) {
         fields: [
           { name: "CodigoUsuario" },
           { name: "CodigoEmpresa" },
-          { name: "CodigoRol" },
         ]
       },
     ]

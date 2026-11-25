@@ -36,6 +36,21 @@ const ObtenerEmpresaActiva = async (CodigoEmpresa) => {
   return EmpresaAcceso;
 };
 
+const ObtenerRolActivoUsuario = async (usuario) => {
+  const CodigoRol = Number(usuario.CodigoRol);
+  if (!Number.isInteger(CodigoRol) || CodigoRol <= 0) {
+    throw LanzarError('El usuario no tiene un rol asignado.', 403);
+  }
+
+  const RolUsuario = await Rol.findOne({
+    where: { CodigoRol, Estatus: 1 }
+  });
+  if (!RolUsuario) {
+    throw LanzarError('El rol del usuario no existe o está inactivo.', 403);
+  }
+  return RolUsuario;
+};
+
 const IniciarSesionServicio = async (NombreUsuario, Clave) => {
 
   if (!NombreUsuario || !Clave) {
@@ -119,11 +134,6 @@ const IniciarSesionServicio = async (NombreUsuario, Clave) => {
     },
     include: [
       {
-        model: Rol,
-        as: 'Rol_CodigoRol',
-        attributes: ['CodigoRol', 'NombreRol', 'Estatus']
-      },
-      {
         model: Empresa,
         as: 'Empresa_CodigoEmpresa',
         attributes: ['CodigoEmpresa', 'NombreEmpresa', 'Estatus'],
@@ -140,19 +150,13 @@ const IniciarSesionServicio = async (NombreUsuario, Clave) => {
   if (!AsociacionAcceso) {
     throw LanzarError("Empresa no asignada o activa para el usuario", 403);
   }
-  if (!AsociacionAcceso.Rol_CodigoRol) {
-    throw LanzarError("Rol no asignado al usuario", 403);
-  }
-  if (AsociacionAcceso.Rol_CodigoRol.Estatus !== 1) {
-    throw LanzarError("Rol inactivo", 403);
-  }
   const EmpresaAcceso = AsociacionAcceso.Empresa_CodigoEmpresa;
-  const RolAcceso = AsociacionAcceso.Rol_CodigoRol;
+  const RolAcceso = await ObtenerRolActivoUsuario(usuario);
 
-  const permisos = await ObtenerPermisosFrontEnd(AsociacionAcceso.CodigoRol);
+  const permisos = await ObtenerPermisosFrontEnd(usuario.CodigoRol);
   const Token = GenerarToken({
     CodigoUsuario: usuario.CodigoUsuario,
-    CodigoRol: AsociacionAcceso.CodigoRol,
+    CodigoRol: usuario.CodigoRol,
     NombreUsuario: usuario.NombreUsuario,
     NombreRol: RolAcceso.NombreRol || null,
     CodigoEmpresa: EmpresaAcceso.CodigoEmpresa,
@@ -165,7 +169,7 @@ const IniciarSesionServicio = async (NombreUsuario, Clave) => {
     usuario: {
       CodigoUsuario: usuario.CodigoUsuario,
       NombreUsuario: usuario.NombreUsuario,
-      CodigoRol: AsociacionAcceso.CodigoRol,
+      CodigoRol: usuario.CodigoRol,
       NombreRol: RolAcceso.NombreRol || null,
       CodigoEmpresa: EmpresaAcceso.CodigoEmpresa,
       NombreEmpresa: EmpresaAcceso.NombreEmpresa || null,
@@ -176,59 +180,7 @@ const IniciarSesionServicio = async (NombreUsuario, Clave) => {
   };
 };
 
-const ObtenerRolesPorEmpresaServicio = async (CodigoEmpresaSolicitada, DatosUsuario) => {
-  const CodigoEmpresa = Number(CodigoEmpresaSolicitada);
-  if (!Number.isInteger(CodigoEmpresa) || CodigoEmpresa <= 0) {
-    throw LanzarError('Debe seleccionar una empresa válida.', 400);
-  }
-
-  const [usuario, EmpresaAcceso] = await Promise.all([
-    ObtenerUsuarioAutenticado(DatosUsuario),
-    ObtenerEmpresaActiva(CodigoEmpresa)
-  ]);
-
-  if (usuario.SuperAdmin === 1) {
-    return {
-      CodigoEmpresa,
-      NombreEmpresa: EmpresaAcceso.NombreEmpresa,
-      AccesoCompleto: true,
-      Roles: []
-    };
-  }
-
-  const Asociaciones = await UsuarioEmpresa.findAll({
-    where: {
-      CodigoUsuario: usuario.CodigoUsuario,
-      CodigoEmpresa,
-      Estatus: 1
-    },
-    attributes: ['CodigoRol'],
-    include: [{
-      model: Rol,
-      as: 'Rol_CodigoRol',
-      attributes: ['CodigoRol', 'NombreRol'],
-      where: { Estatus: 1 },
-      required: true
-    }]
-  });
-
-  if (Asociaciones.length === 0) {
-    throw LanzarError('No tiene roles activos asignados a la empresa seleccionada.', 403);
-  }
-
-  return {
-    CodigoEmpresa,
-    NombreEmpresa: EmpresaAcceso.NombreEmpresa,
-    AccesoCompleto: false,
-    Roles: Asociaciones.map(({ Rol_CodigoRol }) => Rol_CodigoRol)
-  };
-};
-
-const CambiarEmpresaServicio = async (
-  CodigoEmpresaSolicitada,
-  CodigoRolSolicitado,
-  DatosUsuario
-) => {
+const CambiarEmpresaServicio = async (CodigoEmpresaSolicitada, DatosUsuario) => {
   const CodigoEmpresa = Number(CodigoEmpresaSolicitada);
   if (!Number.isInteger(CodigoEmpresa) || CodigoEmpresa <= 0) {
     throw LanzarError('Debe seleccionar una empresa válida.', 400);
@@ -265,33 +217,22 @@ const CambiarEmpresaServicio = async (
     };
   }
 
-  const CodigoRol = Number(CodigoRolSolicitado);
-  if (!Number.isInteger(CodigoRol) || CodigoRol <= 0) {
-    throw LanzarError('Debe seleccionar un rol válido para la empresa.', 400);
-  }
-
   const AsociacionAcceso = await UsuarioEmpresa.findOne({
     where: {
       CodigoUsuario: usuario.CodigoUsuario,
       CodigoEmpresa,
-      CodigoRol,
       Estatus: 1
-    },
-    include: [{
-      model: Rol,
-      as: 'Rol_CodigoRol',
-      attributes: ['CodigoRol', 'NombreRol', 'Estatus'],
-      where: { Estatus: 1 },
-      required: true
-    }]
+    }
   });
 
   if (!AsociacionAcceso) {
-    throw LanzarError('El rol no está activo ni asignado al usuario en esa empresa.', 403);
+    throw LanzarError('La empresa no está asignada al usuario.', 403);
   }
 
+  const RolAcceso = await ObtenerRolActivoUsuario(usuario);
+  const CodigoRol = usuario.CodigoRol;
   const permisos = await ObtenerPermisosFrontEnd(CodigoRol);
-  const NombreRol = AsociacionAcceso.Rol_CodigoRol.NombreRol;
+  const NombreRol = RolAcceso.NombreRol || null;
   const Token = GenerarToken({
     CodigoUsuario: usuario.CodigoUsuario,
     CodigoRol,
@@ -320,6 +261,5 @@ const CambiarEmpresaServicio = async (
 
 module.exports = {
   IniciarSesionServicio,
-  ObtenerRolesPorEmpresaServicio,
   CambiarEmpresaServicio
 };

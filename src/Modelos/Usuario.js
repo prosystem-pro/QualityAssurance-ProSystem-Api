@@ -7,6 +7,14 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       primaryKey: true
     },
+    CodigoRol: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Rol',
+        key: 'CodigoRol'
+      }
+    },
     NombreUsuario: {
       type: DataTypes.STRING(64),
       allowNull: false,

@@ -36,11 +36,16 @@ const Modelo = {
     });
   }
 };
+const ModeloRol = {
+  async findOne({ where }) {
+    return where.CodigoRol === 99 ? null : { CodigoRol: where.CodigoRol, Estatus: 1 };
+  }
+};
 
 const cargarOriginal = Module._load;
 Module._load = function(solicitud, padre, principal) {
   if (padre && padre.filename.endsWith('UsuarioServicio.js')) {
-    if (solicitud === '../Modelos/Relaciones') return { Usuario: Modelo };
+    if (solicitud === '../Modelos/Relaciones') return { Usuario: Modelo, Rol: ModeloRol };
     if (solicitud === '../Configuracion/AutorizacionConfiguracion') {
       return {
         async EncriptarClave() {
@@ -68,13 +73,40 @@ test('no devuelve hash ni salt en las respuestas del servicio de usuarios', asyn
 
   const creado = await servicio.Crear({
     NombreUsuario: 'nuevo',
-    Clave: 'clave'
+    Clave: 'clave',
+    CodigoRol: 7
   });
+  assert.equal(creado.CodigoRol, 7);
   assertSinCredenciales(creado);
 
-  const actualizado = await servicio.Editar(1, { NombreCompleto: 'Nombre' });
+  const actualizado = await servicio.Editar(1, {
+    NombreCompleto: 'Nombre',
+    CodigoRol: 8
+  });
+  assert.equal(actualizado.CodigoRol, 8);
   assertSinCredenciales(actualizado);
 
   const eliminado = await servicio.Eliminar(1);
   assertSinCredenciales(eliminado);
+});
+
+test('requiere un rol activo al crear usuario', async () => {
+  await assert.rejects(servicio.Crear({
+    NombreUsuario: 'sin-rol',
+    Clave: 'clave'
+  }), {
+    message: 'Debe asignar un rol válido al usuario'
+  });
+
+  await assert.rejects(servicio.Crear({
+    NombreUsuario: 'rol-inactivo',
+    Clave: 'clave',
+    CodigoRol: 99
+  }), {
+    message: 'El rol no existe o está inactivo'
+  });
+
+  await assert.rejects(servicio.Editar(1, { CodigoRol: 99 }), {
+    message: 'El rol no existe o está inactivo'
+  });
 });

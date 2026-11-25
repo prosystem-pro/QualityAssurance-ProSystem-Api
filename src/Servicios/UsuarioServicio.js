@@ -1,9 +1,24 @@
-const { Usuario: Modelo } = require('../Modelos/Relaciones');
+const { Usuario: Modelo, Rol } = require('../Modelos/Relaciones');
 const { EncriptarClave } = require('../Configuracion/AutorizacionConfiguracion');
 const { Op } = require('sequelize');
 const { LanzarError } = require('../Utilidades/ErrorServicios');
 
 const CodigoModelo = 'CodigoUsuario';
+
+const ObtenerCodigoRolActivo = async (CodigoRol) => {
+  const Codigo = Number(CodigoRol);
+  if (!Number.isInteger(Codigo) || Codigo <= 0) {
+    throw LanzarError('Debe asignar un rol válido al usuario', 400);
+  }
+
+  const RolActivo = await Rol.findOne({
+    where: { CodigoRol: Codigo, Estatus: 1 }
+  });
+  if (!RolActivo) {
+    throw LanzarError('El rol no existe o está inactivo', 400);
+  }
+  return Codigo;
+};
 
 const ConvertirRespuestaUsuario = (Usuario) => {
   const DatosUsuario = Usuario.toJSON();
@@ -24,6 +39,10 @@ const Listado = async () => {
 };
 
 const Crear = async (Datos) => {
+  if (!Datos || typeof Datos !== 'object' || Array.isArray(Datos)) {
+    throw LanzarError('Datos inválidos para crear usuario', 400);
+  }
+
   if (!Datos.Clave) {
     throw LanzarError('La clave es obligatoria', 400); 
   }
@@ -31,6 +50,8 @@ const Crear = async (Datos) => {
   if ('SuperAdmin' in Datos && Datos.SuperAdmin !== null) {
     throw LanzarError('No se puede asignar un valor a la columna Super Administrador', 400); 
   }
+
+  const CodigoRol = await ObtenerCodigoRolActivo(Datos.CodigoRol);
 
   if (Datos.Correo && Datos.Correo.trim() !== '') {
     const correoExistente = await Modelo.findOne({ 
@@ -42,11 +63,10 @@ const Crear = async (Datos) => {
   }
 
   const { Salt, Hash } = await EncriptarClave(Datos.Clave);
-  Datos.ClaveHash = Hash;
-  Datos.ClaveSalt = Salt;
-  delete Datos.Clave;
+  const DatosUsuario = { ...Datos, CodigoRol, ClaveHash: Hash, ClaveSalt: Salt };
+  delete DatosUsuario.Clave;
 
-  const Usuario = await Modelo.create(Datos);
+  const Usuario = await Modelo.create(DatosUsuario);
   return ConvertirRespuestaUsuario(Usuario);
 };
 
@@ -59,19 +79,24 @@ const Editar = async (Codigo, Datos) => {
     throw LanzarError('Registro no encontrado', 404); 
   }
 
+  const DatosActualizados = { ...Datos };
+
   if ('SuperAdmin' in Datos) {
     if (Objeto.SuperAdmin !== null) {
       throw LanzarError('No se puede modificar la columna Super Administrador de este registro', 400); 
     }
-    delete Datos.SuperAdmin;
+    delete DatosActualizados.SuperAdmin;
   }
 
+  if ('CodigoRol' in DatosActualizados) {
+    DatosActualizados.CodigoRol = await ObtenerCodigoRolActivo(DatosActualizados.CodigoRol);
+  }
 
-  if (Datos.Correo && Datos.Correo.trim() !== '') {
+  if (DatosActualizados.Correo && DatosActualizados.Correo.trim() !== '') {
     const { Op } = require('sequelize'); 
     const correoExistente = await Modelo.findOne({ 
       where: { 
-        Correo: Datos.Correo,
+        Correo: DatosActualizados.Correo,
         [CodigoModelo]: { [Op.ne]: Codigo } 
       } 
     });
@@ -80,14 +105,14 @@ const Editar = async (Codigo, Datos) => {
     }
   }
 
-  if (Datos.Clave && Datos.Clave.trim() !== '') {
-    const { Salt, Hash } = await EncriptarClave(Datos.Clave);
-    Datos.ClaveHash = Hash;
-    Datos.ClaveSalt = Salt;
-    delete Datos.Clave;
+  if (DatosActualizados.Clave && DatosActualizados.Clave.trim() !== '') {
+    const { Salt, Hash } = await EncriptarClave(DatosActualizados.Clave);
+    DatosActualizados.ClaveHash = Hash;
+    DatosActualizados.ClaveSalt = Salt;
+    delete DatosActualizados.Clave;
   }
 
-  await Objeto.update(Datos);
+  await Objeto.update(DatosActualizados);
   return ConvertirRespuestaUsuario(Objeto);
 };
 
