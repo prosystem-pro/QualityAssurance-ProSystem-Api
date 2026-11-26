@@ -5,6 +5,7 @@ const Module = require('node:module');
 const usuario = {
   CodigoUsuario: 5,
   CodigoRol: 7,
+  TemaOscuro: false,
   NombreUsuario: 'Roberto',
   SuperAdmin: null,
   Estatus: 1
@@ -104,6 +105,7 @@ test('cambia empresa manteniendo el rol global del usuario', async () => {
   assert.equal(datosToken.CodigoRol, usuario.CodigoRol);
   assert.equal(codigoRolPermisos, usuario.CodigoRol);
   assert.equal(respuesta.usuario.Permisos[0].CodigoRol, usuario.CodigoRol);
+  assert.equal(respuesta.usuario.TemaOscuro, false);
 });
 
 test('rechaza cambiar a una empresa no asignada al usuario', async () => {

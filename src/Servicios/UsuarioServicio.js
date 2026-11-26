@@ -20,6 +20,13 @@ const ObtenerCodigoRolActivo = async (CodigoRol) => {
   return Codigo;
 };
 
+const ValidarTemaOscuro = (TemaOscuro) => {
+  if (typeof TemaOscuro !== 'boolean') {
+    throw LanzarError('TemaOscuro debe ser true o false', 400);
+  }
+  return TemaOscuro;
+};
+
 const ConvertirRespuestaUsuario = (Usuario) => {
   const DatosUsuario = Usuario.toJSON();
   delete DatosUsuario.ClaveHash;
@@ -92,6 +99,10 @@ const Editar = async (Codigo, Datos) => {
     DatosActualizados.CodigoRol = await ObtenerCodigoRolActivo(DatosActualizados.CodigoRol);
   }
 
+  if ('TemaOscuro' in DatosActualizados) {
+    DatosActualizados.TemaOscuro = ValidarTemaOscuro(DatosActualizados.TemaOscuro);
+  }
+
   if (DatosActualizados.Correo && DatosActualizados.Correo.trim() !== '') {
     const { Op } = require('sequelize'); 
     const correoExistente = await Modelo.findOne({ 
@@ -116,6 +127,23 @@ const Editar = async (Codigo, Datos) => {
   return ConvertirRespuestaUsuario(Objeto);
 };
 
+const EditarTemaOscuro = async (CodigoUsuario, TemaOscuro) => {
+  const Codigo = Number(CodigoUsuario);
+  if (!Number.isInteger(Codigo) || Codigo <= 0) {
+    throw LanzarError('El token no contiene un usuario válido.', 401);
+  }
+  const TemaValidado = ValidarTemaOscuro(TemaOscuro);
+  const Objeto = await Modelo.findOne({
+    where: { [CodigoModelo]: Codigo, Estatus: 1 }
+  });
+  if (!Objeto) {
+    throw LanzarError('Usuario inactivo o no encontrado.', 404);
+  }
+
+  await Objeto.update({ TemaOscuro: TemaValidado });
+  return ConvertirRespuestaUsuario(Objeto);
+};
+
 const Eliminar = async (Codigo) => {
   const Objeto = await Modelo.findOne({ 
     where: { [CodigoModelo]: Codigo } 
@@ -137,5 +165,6 @@ module.exports = {
   Listado,
   Crear,
   Editar,
+  EditarTemaOscuro,
   Eliminar
 };

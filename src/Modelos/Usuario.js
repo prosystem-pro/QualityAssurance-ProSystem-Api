@@ -48,6 +48,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(256),
       allowNull: true
     },
+    TemaOscuro: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
     SuperAdmin: {
       type: DataTypes.TINYINT,
       allowNull: true

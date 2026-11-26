@@ -15,6 +15,7 @@ const crearInstanciaUsuario = (datos) => {
 const registro = crearInstanciaUsuario({
   CodigoUsuario: 1,
   NombreUsuario: 'usuario',
+  TemaOscuro: false,
   SuperAdmin: null,
   ClaveHash: 'hash-privado',
   ClaveSalt: 'salt-privado'
@@ -31,6 +32,7 @@ const Modelo = {
     return crearInstanciaUsuario({
       ...datos,
       CodigoUsuario: 2,
+      TemaOscuro: false,
       ClaveHash: 'hash-privado',
       ClaveSalt: 'salt-privado'
     });
@@ -77,17 +79,33 @@ test('no devuelve hash ni salt en las respuestas del servicio de usuarios', asyn
     CodigoRol: 7
   });
   assert.equal(creado.CodigoRol, 7);
+  assert.equal(creado.TemaOscuro, false);
   assertSinCredenciales(creado);
 
   const actualizado = await servicio.Editar(1, {
     NombreCompleto: 'Nombre',
-    CodigoRol: 8
+    CodigoRol: 8,
+    TemaOscuro: true
   });
   assert.equal(actualizado.CodigoRol, 8);
+  assert.equal(actualizado.TemaOscuro, true);
   assertSinCredenciales(actualizado);
 
   const eliminado = await servicio.Eliminar(1);
   assertSinCredenciales(eliminado);
+});
+
+test('actualiza solo la preferencia del usuario autenticado y exige un booleano', async () => {
+  const actualizado = await servicio.EditarTemaOscuro(1, false);
+
+  assert.equal(actualizado.TemaOscuro, false);
+  assert.equal(registro.TemaOscuro, false);
+  await assert.rejects(servicio.EditarTemaOscuro(1, 'true'), {
+    message: 'TemaOscuro debe ser true o false'
+  });
+  await assert.rejects(servicio.EditarTemaOscuro(0, true), {
+    message: 'El token no contiene un usuario válido.'
+  });
 });
 
 test('requiere un rol activo al crear usuario', async () => {

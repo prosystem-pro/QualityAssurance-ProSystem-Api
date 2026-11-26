@@ -3,12 +3,16 @@ const { Usuario, Rol, Empresa, UsuarioEmpresa } = require('../Modelos/Relaciones
 const { LanzarError } = require('../Utilidades/ErrorServicios');
 const { ObtenerPermisosFrontEnd } = require('../Servicios/PermisoRolRecursoServicio');
 
+const ObtenerTemaOscuro = (usuario) =>
+  usuario.TemaOscuro === true || usuario.TemaOscuro === 1;
+
 const ObtenerUsuarioAutenticado = async (DatosUsuario) => {
   const CodigoUsuario = Number(DatosUsuario?.CodigoUsuario);
   if (CodigoUsuario === 0 && DatosUsuario?.SuperAdmin === 1) {
     return {
       CodigoUsuario,
       NombreUsuario: DatosUsuario.NombreUsuario,
+      TemaOscuro: false,
       SuperAdmin: 1
     };
   }
@@ -73,6 +77,7 @@ const IniciarSesionServicio = async (NombreUsuario, Clave) => {
       usuario: {
         CodigoUsuario: 0,
         NombreUsuario: "ADMIN_EMERGENCIA",
+        TemaOscuro: false,
         CodigoRol: null,
         NombreRol: "MODO_RESCATE",
         CodigoEmpresa: null,
@@ -112,6 +117,7 @@ const IniciarSesionServicio = async (NombreUsuario, Clave) => {
       usuario: {
         CodigoUsuario: usuario.CodigoUsuario,
         NombreUsuario: usuario.NombreUsuario,
+        TemaOscuro: ObtenerTemaOscuro(usuario),
         CodigoRol: null,
         NombreRol: null,
         CodigoEmpresa: null,
@@ -169,6 +175,7 @@ const IniciarSesionServicio = async (NombreUsuario, Clave) => {
     usuario: {
       CodigoUsuario: usuario.CodigoUsuario,
       NombreUsuario: usuario.NombreUsuario,
+      TemaOscuro: ObtenerTemaOscuro(usuario),
       CodigoRol: usuario.CodigoRol,
       NombreRol: RolAcceso.NombreRol || null,
       CodigoEmpresa: EmpresaAcceso.CodigoEmpresa,
@@ -206,6 +213,7 @@ const CambiarEmpresaServicio = async (CodigoEmpresaSolicitada, DatosUsuario) => 
       usuario: {
         CodigoUsuario: usuario.CodigoUsuario,
         NombreUsuario: usuario.NombreUsuario,
+        TemaOscuro: ObtenerTemaOscuro(usuario),
         CodigoRol: null,
         NombreRol: null,
         CodigoEmpresa: EmpresaAcceso.CodigoEmpresa,
@@ -248,6 +256,7 @@ const CambiarEmpresaServicio = async (CodigoEmpresaSolicitada, DatosUsuario) => 
     usuario: {
       CodigoUsuario: usuario.CodigoUsuario,
       NombreUsuario: usuario.NombreUsuario,
+      TemaOscuro: ObtenerTemaOscuro(usuario),
       CodigoRol,
       NombreRol,
       CodigoEmpresa: EmpresaAcceso.CodigoEmpresa,

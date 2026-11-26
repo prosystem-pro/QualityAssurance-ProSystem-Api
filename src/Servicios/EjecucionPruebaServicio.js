@@ -11,11 +11,10 @@
   Usuario
 } = require('../Modelos/Relaciones');
 const { LanzarError } = require('../Utilidades/ErrorServicios');
-const { Op } = require('sequelize');
+const { Op, fn } = require('sequelize');
 const { randomBytes } = require('crypto');
 
 const CodigoEmpresaModelo = 'CodigoEmpresa';
-const ResultadoNoEjecutado = 4;
 const EstatusVisibles = { [Op.in]: [1, 2] };
 
 const GenerarCodigoExternoTemporal = () =>
@@ -176,13 +175,29 @@ const ObtenerFecha = (Valor, Nombre) => {
 };
 
 const ValidarResultado = async (CodigoResultadoEjecucion, Transaccion) => {
+  if (CodigoResultadoEjecucion === undefined || CodigoResultadoEjecucion === null) {
+    return null;
+  }
+
   const Codigo = ValidarEntero(CodigoResultadoEjecucion, 'CodigoResultadoEjecucion');
   const Resultado = await ResultadoEjecucion.findOne({
     where: { CodigoResultadoEjecucion: Codigo, Estatus: EstatusVisibles },
     transaction: Transaccion
   });
-  if (!Resultado) throw LanzarError('El resultado de ejecución no existe o no está activo.', 400);
+  if (!Resultado) {
+    throw LanzarError(`El resultado de ejecución ${Codigo} no existe o no está activo.`, 400);
+  }
   return Codigo;
+};
+
+const ObtenerCodigoResultadoEjecucion = (Datos) => {
+  if (Object.prototype.hasOwnProperty.call(Datos, 'CodigoResultado')) {
+    throw LanzarError(
+      'El campo CodigoResultado fue renombrado a CodigoResultadoEjecucion.',
+      400
+    );
+  }
+  return Datos.CodigoResultadoEjecucion;
 };
 
 const CrearIncludesEjecucion = () => {
@@ -405,7 +420,7 @@ const CrearEjecucionPrueba = async (Datos, CodigoEmpresaSolicitado, DatosUsuario
       throw LanzarError('CodigoEstadoEjecucion debe ser 1 (En progreso) o 2 (Finalizada).', 400);
     }
     DatosCrear.CodigoEstadoEjecucion = Estado;
-    if (Estado === 2) DatosCrear.FechaEjecucion = new Date();
+    if (Estado === 2) DatosCrear.FechaEjecucion = fn('getdate');
   }
 
   const FechaEjecucion = ObtenerFecha(Datos.FechaEjecucion, 'FechaEjecucion');
@@ -451,12 +466,15 @@ const EditarEjecucionPrueba = async (
     }
     DatosActualizar.CodigoEstadoEjecucion = Estado;
     if (Estado === 2 && Datos.FechaEjecucion === undefined) {
-      DatosActualizar.FechaEjecucion = new Date();
+      DatosActualizar.FechaEjecucion = fn('getdate');
     }
   }
   const FechaEjecucion = ObtenerFecha(Datos.FechaEjecucion, 'FechaEjecucion');
   if (FechaEjecucion !== undefined) DatosActualizar.FechaEjecucion = FechaEjecucion;
-  await Ejecucion.update({ ...DatosActualizar, FechaUltimaModificacion: new Date() });
+  await Ejecucion.update({
+    ...DatosActualizar,
+    FechaUltimaModificacion: fn('getdate')
+  });
   return ObtenerEjecucion(Codigo, CodigoEmpresa);
 };
 
@@ -501,7 +519,7 @@ const NormalizarPasosEjecucion = async (Pasos, CodigoCasoPrueba, Transaccion) =>
     return {
       CodigoCasoPruebaPaso: ValidarEntero(Paso.CodigoCasoPruebaPaso, 'CodigoCasoPruebaPaso'),
       Orden: ValidarEntero(Paso.Orden, 'Orden'),
-      CodigoResultadoEjecucion: Paso.CodigoResultadoEjecucion,
+      CodigoResultadoEjecucion: ObtenerCodigoResultadoEjecucion(Paso),
       AccionRealizada: Paso.AccionRealizada ?? null,
       ResultadoObtenido: Paso.ResultadoObtenido ?? null,
       Comentario: Paso.Comentario ?? null
@@ -598,7 +616,8 @@ const CrearEjecucionPruebaDetalle = async (
       throw LanzarError('Este caso de prueba ya está agregado a la ejecución.', 409);
     }
     const CodigoResultadoEjecucion = await ValidarResultado(
-      Datos.CodigoResultadoEjecucion ?? ResultadoNoEjecutado, Transaccion
+      ObtenerCodigoResultadoEjecucion(Datos),
+      Transaccion
     );
     const TiempoEjecucionSegundos = ValidarDatosDetalle(Datos);
     const Pasos = await NormalizarPasosEjecucion(Datos.Pasos, CodigoCasoPrueba, Transaccion);
@@ -652,10 +671,14 @@ const EditarEjecucionPruebaDetalle = async (
     });
     if (!Detalle) throw LanzarError('El detalle no pertenece a esta ejecución.', 404);
 
-    const DatosActualizar = { CodigoUsuario, FechaUltimaModificacion: new Date() };
-    if (Datos.CodigoResultadoEjecucion !== undefined) {
+    const DatosActualizar = {
+      CodigoUsuario,
+      FechaUltimaModificacion: fn('getdate')
+    };
+    if (Datos.CodigoResultadoEjecucion !== undefined || Datos.CodigoResultado !== undefined) {
       DatosActualizar.CodigoResultadoEjecucion = await ValidarResultado(
-        Datos.CodigoResultadoEjecucion, Transaccion
+        ObtenerCodigoResultadoEjecucion(Datos),
+        Transaccion
       );
     }
     if (Datos.Comentario !== undefined) {
@@ -779,7 +802,8 @@ const CrearEjecucionPruebaDetalleMultiple = async (
   return EjecucionPrueba.sequelize.transaction(async (Transaccion) => {
     await ValidarEjecucionEnProgreso(CodigoEjecucionPrueba, CodigoEmpresa, Transaccion);
     const CodigoResultadoEjecucion = await ValidarResultado(
-      Datos.CodigoResultadoEjecucion ?? ResultadoNoEjecutado, Transaccion
+      ObtenerCodigoResultadoEjecucion(Datos),
+      Transaccion
     );
 
     const CodigosCasoTotales = new Set(CodigosCasoIndividuales);

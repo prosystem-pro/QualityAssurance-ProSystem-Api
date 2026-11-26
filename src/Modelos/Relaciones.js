@@ -1,5 +1,5 @@
 // ARCHIVO GENERADO AUTOMÁTICAMENTE — No editar manualmente
-// Generado el: 2026-11-25T02:05:37.373Z
+// Generado el: 2026-11-26T16:44:55.153Z
 // Nombre configurado en .env: Relaciones.js
 
 const Path = require('path');
@@ -30,42 +30,6 @@ const Usuario = require(Path.join(RutaModelos, 'Usuario.js'))(BaseDatos, Sequeli
 const UsuarioEmpresa = require(Path.join(RutaModelos, 'UsuarioEmpresa.js'))(BaseDatos, Sequelize.DataTypes);
 
 // === RELACIONES ===
-
-UsuarioEmpresa.belongsTo(Usuario, {
-  foreignKey: 'CodigoUsuario',
-  as: 'Usuario_CodigoUsuario'
-});
-Usuario.hasMany(UsuarioEmpresa, {
-  foreignKey: 'CodigoUsuario',
-  as: 'UsuarioEmpresa_CodigoUsuario'
-});
-
-CasoPrueba.belongsTo(Usuario, {
-  foreignKey: 'CodigoUsuario',
-  as: 'Usuario_CodigoUsuario'
-});
-Usuario.hasMany(CasoPrueba, {
-  foreignKey: 'CodigoUsuario',
-  as: 'CasoPrueba_CodigoUsuario'
-});
-
-EjecucionPrueba.belongsTo(Usuario, {
-  foreignKey: 'CodigoUsuario',
-  as: 'Usuario_CodigoUsuario'
-});
-Usuario.hasMany(EjecucionPrueba, {
-  foreignKey: 'CodigoUsuario',
-  as: 'EjecucionPrueba_CodigoUsuario'
-});
-
-EjecucionPruebaDetalle.belongsTo(Usuario, {
-  foreignKey: 'CodigoUsuario',
-  as: 'Usuario_CodigoUsuario'
-});
-Usuario.hasMany(EjecucionPruebaDetalle, {
-  foreignKey: 'CodigoUsuario',
-  as: 'EjecucionPruebaDetalle_CodigoUsuario'
-});
 
 CasoPrueba.belongsTo(TipoPrueba, {
   foreignKey: 'CodigoTipoPrueba',
@@ -119,6 +83,42 @@ EjecucionPruebaPaso.belongsTo(ResultadoEjecucion, {
 ResultadoEjecucion.hasMany(EjecucionPruebaPaso, {
   foreignKey: 'CodigoResultadoEjecucion',
   as: 'EjecucionPruebaPaso_CodigoResultadoEjecucion'
+});
+
+UsuarioEmpresa.belongsTo(Usuario, {
+  foreignKey: 'CodigoUsuario',
+  as: 'Usuario_CodigoUsuario'
+});
+Usuario.hasMany(UsuarioEmpresa, {
+  foreignKey: 'CodigoUsuario',
+  as: 'UsuarioEmpresa_CodigoUsuario'
+});
+
+EjecucionPruebaDetalle.belongsTo(Usuario, {
+  foreignKey: 'CodigoUsuario',
+  as: 'Usuario_CodigoUsuario'
+});
+Usuario.hasMany(EjecucionPruebaDetalle, {
+  foreignKey: 'CodigoUsuario',
+  as: 'EjecucionPruebaDetalle_CodigoUsuario'
+});
+
+CasoPrueba.belongsTo(Usuario, {
+  foreignKey: 'CodigoUsuario',
+  as: 'Usuario_CodigoUsuario'
+});
+Usuario.hasMany(CasoPrueba, {
+  foreignKey: 'CodigoUsuario',
+  as: 'CasoPrueba_CodigoUsuario'
+});
+
+EjecucionPrueba.belongsTo(Usuario, {
+  foreignKey: 'CodigoUsuario',
+  as: 'Usuario_CodigoUsuario'
+});
+Usuario.hasMany(EjecucionPrueba, {
+  foreignKey: 'CodigoUsuario',
+  as: 'EjecucionPrueba_CodigoUsuario'
 });
 
 Usuario.belongsTo(Rol, {

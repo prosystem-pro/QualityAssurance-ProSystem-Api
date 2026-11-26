@@ -68,6 +68,7 @@ let siguienteDetalle = 200;
 let empresaActiva = true;
 let opcionesCatalogo;
 let opcionesAsociacionUsuarioEmpresa;
+let datosActualizarDetalle;
 
 const EjecutarTransaccion = async (ejecutar) =>
   ejecutar({ id: 'transaccion-prueba' });
@@ -101,12 +102,21 @@ EjecucionPrueba.findAll = async ({ where }) =>
   }));
 
 EjecucionPruebaDetalle.sequelize = EjecucionPrueba.sequelize;
-EjecucionPruebaDetalle.findOne = async ({ where }) =>
-  datosDetalles.find((actual) =>
+EjecucionPruebaDetalle.findOne = async ({ where }) => {
+  const Registro = datosDetalles.find((actual) =>
     actual.CodigoEjecucionPruebaDetalle === where.CodigoEjecucionPruebaDetalle &&
     (where.CodigoEjecucionPrueba === undefined ||
       actual.CodigoEjecucionPrueba === where.CodigoEjecucionPrueba)
-  ) || null;
+  );
+  if (!Registro) return null;
+  const Instancia = ConvertirAInstancia(Registro);
+  const Actualizar = Instancia.update;
+  Instancia.update = async (Datos) => {
+    datosActualizarDetalle = Datos;
+    await Actualizar(Datos);
+  };
+  return Instancia;
+};
 EjecucionPruebaDetalle.create = async (datos) => {
   const registro = {
     ...datos,
@@ -190,6 +200,7 @@ const reiniciarDatos = () => {
   empresaActiva = true;
   opcionesCatalogo = undefined;
   opcionesAsociacionUsuarioEmpresa = undefined;
+  datosActualizarDetalle = undefined;
 };
 
 test('el catálogo devuelve solo resultados activos y valida acceso a empresa', async () => {
@@ -233,7 +244,7 @@ test('crea encabezado con empresa y usuario autenticado, no con los valores del 
   assert.equal(ejecucion.CodigoEmpresa, 7);
   assert.equal(ejecucion.CodigoUsuario, 44);
   assert.equal(ejecucion.CodigoEstadoEjecucion, 2);
-  assert.ok(ejecucion.FechaEjecucion instanceof Date);
+  assert.equal(ejecucion.FechaEjecucion.fn, 'getdate');
   assert.equal(ejecucion.NombreUsuario, 'qa.user');
   assert.deepEqual(ejecucion.Detalles, []);
 });
@@ -302,6 +313,29 @@ test('registra resultado del caso y pasos originales sin aceptar un paso de otro
       CodigoResultadoEjecucion: 1
     }]
   }, 7, admin), { statusCode: 400 });
+});
+
+test('usa GETDATE de SQL Server al actualizar la fecha del detalle', async () => {
+  reiniciarDatos();
+  datosEjecuciones = [{
+    CodigoEjecucionPrueba: 100,
+    CodigoEmpresa: 7,
+    CodigoEstadoEjecucion: 1
+  }];
+  datosDetalles = [{
+    CodigoEjecucionPruebaDetalle: 200,
+    CodigoEjecucionPrueba: 100,
+    CodigoCasoPrueba: 10,
+    CodigoResultadoEjecucion: 1,
+    Estatus: 1
+  }];
+
+  await servicio.EditarEjecucionPruebaDetalle(100, 200, {
+    CodigoResultadoEjecucion: 2
+  }, 7, admin);
+
+  assert.equal(datosActualizarDetalle.CodigoResultadoEjecucion, 2);
+  assert.equal(datosActualizarDetalle.FechaUltimaModificacion.fn, 'getdate');
 });
 
 test('administra el catálogo de resultados con nombre único y sin enviar estatus inválido', async () => {
@@ -381,15 +415,25 @@ test('agrega en bloque los casos de una carpeta con subcarpetas y casos sueltos,
   try {
     const respuesta = await servicio.CrearEjecucionPruebaDetalleMultiple(100, {
       CodigosCarpeta: [1],
-      CodigosCasoPrueba: [12],
-      CodigoResultadoEjecucion: 1
+      CodigosCasoPrueba: [12]
     }, 7, admin);
     assert.equal(respuesta.TotalCreados, 2);
     assert.deepEqual(respuesta.CodigosCasoOmitidos, [10]);
     assert.deepEqual(detallesBd.map((d) => d.CodigoCasoPrueba).sort(), [10, 11, 12]);
     assert.ok(detallesBd.every((d) => d.CodigoUsuario === undefined || d.CodigoUsuario === 44));
+    assert.ok(
+      detallesBd.filter((d) => d.CodigoCasoPrueba !== 10)
+        .every((d) => d.CodigoResultadoEjecucion === null)
+    );
     assert.equal(respuesta.Creados[0].CasoPrueba.Carpeta.CodigoCarpeta, 1);
     await assert.rejects(servicio.CrearEjecucionPruebaDetalleMultiple(100, {}, 7, admin), { statusCode: 400 });
+    await assert.rejects(servicio.CrearEjecucionPruebaDetalleMultiple(100, {
+      CodigosCasoPrueba: [13],
+      CodigoResultado: 1
+    }, 7, admin), {
+      statusCode: 400,
+      message: 'El campo CodigoResultado fue renombrado a CodigoResultadoEjecucion.'
+    });
     await assert.rejects(servicio.CrearEjecucionPruebaDetalleMultiple(100, {
       CodigosCarpeta: [1, 99],
       CodigoResultadoEjecucion: 1

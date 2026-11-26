@@ -7,6 +7,7 @@ const usuario = {
   NombreUsuario: 'usuario',
   ClaveHash: 'hash',
   CodigoRol: 22,
+  TemaOscuro: true,
   Estatus: 1,
   SuperAdmin: null
 };
@@ -90,4 +91,5 @@ test('obtiene el rol del usuario y la empresa desde su asociación prioritaria',
   assert.equal(tokenGenerado.CodigoEmpresa, 8);
   assert.equal(respuesta.usuario.CodigoRol, 22);
   assert.equal(respuesta.usuario.CodigoEmpresa, 8);
+  assert.equal(respuesta.usuario.TemaOscuro, true);
 });

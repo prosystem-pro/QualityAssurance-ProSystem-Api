@@ -30,6 +30,18 @@ const Editar = async (req, res) => {
   }
 };
 
+const EditarTemaOscuro = async (req, res) => {
+  try {
+    const Objeto = await Servicio.EditarTemaOscuro(
+      req.Datos?.CodigoUsuario,
+      req.body?.TemaOscuro
+    );
+    return ResponderExito(res, 'Preferencia de tema actualizada correctamente.', Objeto);
+  } catch (error) {
+    return ManejarError(error, res, 'Error al actualizar la preferencia de tema');
+  }
+};
+
 const Eliminar = async (req, res) => {
   try {
     const { Codigo } = req.params;
@@ -44,5 +56,6 @@ module.exports = {
   Listado,
   Crear,
   Editar,
+  EditarTemaOscuro,
   Eliminar
 };
